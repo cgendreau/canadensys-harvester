@@ -1,7 +1,10 @@
 package net.canadensys.processing.exception;
 
+import net.canadensys.processing.ItemProcessorIF;
+
 /**
  * Exception that could be thrown while processing
+ * @see ItemProcessorIF
  * @author canadensys
  *
  */

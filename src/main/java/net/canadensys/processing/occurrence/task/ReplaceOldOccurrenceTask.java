@@ -23,7 +23,7 @@ public class ReplaceOldOccurrenceTask implements ItemTaskIF{
 	private SessionFactory sessionFactory;
 	
 	/**
-	 * @param sharedParameters get BatchConstant.DWCA_IDENTIFIER_TAG
+	 * @param sharedParameters get BatchConstant.DWCA_IDENTIFIER_TAG, add BatchConstant.NUMBER_OF_RECORDS
 	 */
 	@Override
 	public void execute(Map<String,Object> sharedParameters){
@@ -48,7 +48,7 @@ public class ReplaceOldOccurrenceTask implements ItemTaskIF{
 		//copy records from buffer
 		query = session.createSQLQuery("INSERT INTO occurrence (SELECT * FROM buffer.occurrence WHERE sourcefileid=?)");
 		query.setString(0, sourceFileId);
-		query.executeUpdate();
+		int numberOfRecords = query.executeUpdate();
 		query = session.createSQLQuery("INSERT INTO occurrence_raw (SELECT * FROM buffer.occurrence_raw WHERE sourcefileid=?)");
 		query.setString(0, sourceFileId);
 		query.executeUpdate();
@@ -62,7 +62,8 @@ public class ReplaceOldOccurrenceTask implements ItemTaskIF{
 		query.executeUpdate();
 		session.flush();
 		session.getTransaction().commit();
-
+		
+		sharedParameters.put(BatchConstant.NUMBER_OF_RECORDS, numberOfRecords);
 	}
 
 	public void setSessionFactory(SessionFactory sessionFactory) {

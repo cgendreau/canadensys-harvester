@@ -5,7 +5,6 @@ import java.util.Map;
 
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemProcessorIF;
-import net.canadensys.processing.exception.ProcessException;
 import net.canadensys.processing.exception.TaskExecutionException;
 import net.canadensys.processing.occurrence.BatchConstant;
 
