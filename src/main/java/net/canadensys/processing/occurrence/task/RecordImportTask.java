@@ -5,7 +5,7 @@ import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.model.ImportLogModel;
 
 import org.apache.log4j.Logger;
@@ -24,18 +24,21 @@ public class RecordImportTask implements ItemTaskIF{
 	//get log4j handler
 	private static final Logger LOGGER = Logger.getLogger(RecordImportTask.class);
 	
+	/**
+	 * @param sharedParameters in:SharedParameterEnum.DATASET_SHORTNAME,SharedParameterEnum.NUMBER_OF_RECORDS
+	 */
 	@Override
-	public void execute(Map<String,Object> sharedParameters){
+	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
 		Session session = sessionFactory.getCurrentSession();
 		ImportLogModel importLogModel = new ImportLogModel();
-		String sourceFileId = (String)sharedParameters.get(BatchConstant.DWCA_IDENTIFIER_TAG);
-		Integer numberOfRecords = (Integer)sharedParameters.get(BatchConstant.NUMBER_OF_RECORDS);
+		String datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
+		Integer numberOfRecords = (Integer)sharedParameters.get(SharedParameterEnum.NUMBER_OF_RECORDS);
 		
-		if(sourceFileId == null || numberOfRecords == null){
-			LOGGER.fatal("Misconfigured task : needs  sourceFileId and numberOfRecords");
+		if(datasetShortname == null || numberOfRecords == null){
+			LOGGER.fatal("Misconfigured task : needs  datasetShortname and numberOfRecords");
 			throw new TaskExecutionException("Misconfigured task");
 		}
-		importLogModel.setSourcefileid(sourceFileId);
+		importLogModel.setSourcefileid(datasetShortname);
 		importLogModel.setRecord_quantity(numberOfRecords);
 		importLogModel.setUpdated_by(CURRENT_USER);
 		importLogModel.setEvent_end_date_time(new Date());

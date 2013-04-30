@@ -5,7 +5,7 @@ import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
@@ -31,11 +31,11 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	 * @param sharedParameters get BatchConstant.NUMBER_OF_RECORDS and BatchConstant.DWCA_IDENTIFIER_TAG
 	 */
 	@Override
-	public void execute(Map<String, Object> sharedParameters) {
-		final Integer numberOfRecords = (Integer)sharedParameters.get(BatchConstant.NUMBER_OF_RECORDS);
-		final String sourceFileId = (String)sharedParameters.get(BatchConstant.DWCA_IDENTIFIER_TAG);
-		if(numberOfRecords == null || sourceFileId == null || callback == null){
-			LOGGER.fatal("Misconfigured task : needs numberOfRecords, sourceFileId and callback");
+	public void execute(Map<SharedParameterEnum, Object> sharedParameters) {
+		final Integer numberOfRecords = (Integer)sharedParameters.get(SharedParameterEnum.NUMBER_OF_RECORDS);
+		final String datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
+		if(numberOfRecords == null || datasetShortname == null || callback == null){
+			LOGGER.fatal("Misconfigured task : needs numberOfRecords, datasetShortname and callback");
 			throw new TaskExecutionException("Misconfigured task");
 		}
 		
@@ -44,7 +44,7 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 			public void run() {
 				Session session = sessionFactory.openSession();
 				SQLQuery query = session.createSQLQuery("SELECT count(*) FROM buffer.occurrence_raw WHERE sourcefileid=?");
-				query.setString(0, sourceFileId);
+				query.setString(0, datasetShortname);
 				
 				BigInteger currNumberOfResult = (BigInteger)query.uniqueResult();
 				while(currNumberOfResult.intValue() < numberOfRecords){

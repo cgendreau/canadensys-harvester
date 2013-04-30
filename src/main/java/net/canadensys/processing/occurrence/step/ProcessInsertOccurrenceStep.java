@@ -2,6 +2,7 @@ package net.canadensys.processing.occurrence.step;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jms.IllegalStateException;
 
@@ -12,6 +13,7 @@ import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingMessageIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.jms.JMSConsumerMessageHandler;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.message.ProcessOccurrenceMessage;
 
 /**
@@ -26,7 +28,7 @@ public class ProcessInsertOccurrenceStep implements ProcessingStepIF,JMSConsumer
 	private ItemWriterIF<OccurrenceModel> writer;
 	
 	@Override
-	public void preStep() throws IllegalStateException {
+	public void preStep(Map<SharedParameterEnum,Object> sharedParameters) throws IllegalStateException {
 		if(writer == null){
 			throw new IllegalStateException("No writer defined");
 		}

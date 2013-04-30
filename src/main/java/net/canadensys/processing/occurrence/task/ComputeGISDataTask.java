@@ -4,7 +4,7 @@ import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
@@ -25,27 +25,27 @@ public class ComputeGISDataTask implements ItemTaskIF{
 	private SessionFactory sessionFactory;
 	
 	/**
-	 * @param sharedParameters get BatchConstant.DWCA_IDENTIFIER_TAG
+	 * @param sharedParameters in:DATASET_SHORTNAME
 	 */
 	@Override
-	public void execute(Map<String,Object> sharedParameters){
-		String sourceFileId = (String)sharedParameters.get(BatchConstant.DWCA_IDENTIFIER_TAG);
+	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
+		String datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
 		Session session = sessionFactory.getCurrentSession();
 		
-		if(sourceFileId == null){
-			LOGGER.fatal("Misconfigured task : needs  sourceFileId");
+		if(datasetShortname == null){
+			LOGGER.fatal("Misconfigured task : needs  datasetShortname");
 			throw new TaskExecutionException("Misconfigured task");
 		}
 		session.beginTransaction();
 		//update the_geom
 		SQLQuery query = session.createSQLQuery("UPDATE buffer.occurrence SET the_geom = st_geometryfromtext('POINT('||decimallongitude||' '|| decimallatitude ||')',4326) " +
 				"WHERE sourcefileid=? AND decimallatitude IS NOT NULL AND decimallongitude IS NOT NULL");
-		query.setString(0, sourceFileId);
+		query.setString(0, datasetShortname);
 		query.executeUpdate();
 		
 		//update the_geom_webmercator
 		query = session.createSQLQuery("UPDATE buffer.occurrence SET the_geom_webmercator = st_transform_null(the_geom,3857) WHERE sourcefileid=? AND the_geom IS NOT NULL");
-		query.setString(0, sourceFileId);
+		query.setString(0, datasetShortname);
 		query.executeUpdate();
 		session.flush();
 		session.getTransaction().commit();

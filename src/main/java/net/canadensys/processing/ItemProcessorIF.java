@@ -3,6 +3,7 @@ package net.canadensys.processing;
 import java.util.Map;
 
 import net.canadensys.processing.exception.ProcessException;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 /**
  * Item processing interface
@@ -24,7 +25,7 @@ public interface ItemProcessorIF<T,V> {
 	 * @param sharedParameters see concrete ItemProcessor documentation
 	 * @return
 	 */
-	public V process(T data, Map<String,Object> sharedParameters) throws ProcessException;
+	public V process(T data, Map<SharedParameterEnum,Object> sharedParameters) throws ProcessException;
 	
 	/**
 	 * Clean up of the ItemProcessor after processing

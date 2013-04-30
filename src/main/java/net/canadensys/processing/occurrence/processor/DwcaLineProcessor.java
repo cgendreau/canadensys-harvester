@@ -6,7 +6,7 @@ import java.util.Map;
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemProcessorIF;
 import net.canadensys.processing.exception.TaskExecutionException;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
@@ -44,14 +44,15 @@ public class DwcaLineProcessor implements ItemProcessorIF<OccurrenceRawModel, Oc
 	 * @return same instance of OccurrenceRawModel with modified values
 	 */
 	@Override
-	public OccurrenceRawModel process(OccurrenceRawModel occModel, Map<String,Object> sharedParameters) {
-		String sourceFileId = (String)sharedParameters.get(BatchConstant.DWCA_IDENTIFIER_TAG);
+	public OccurrenceRawModel process(OccurrenceRawModel occModel, Map<SharedParameterEnum,Object> sharedParameters) {
+		//TODO could be done at init phase?
+		String datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
         
-        if(sourceFileId == null){
+        if(datasetShortname == null){
 			LOGGER.fatal("Misconfigured processor : needs  sourceFileId");
 			throw new TaskExecutionException("Misconfigured processor");
 		}
-		occModel.setSourcefileid(sourceFileId);
+		occModel.setSourcefileid(datasetShortname);
 		
 		BigInteger auto_id = (BigInteger)sqlQuery.uniqueResult();
 		occModel.setAuto_id(auto_id.intValue());

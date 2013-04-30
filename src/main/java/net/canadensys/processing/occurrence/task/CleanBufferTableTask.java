@@ -4,7 +4,7 @@ import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
@@ -18,7 +18,7 @@ import org.hibernate.SessionFactory;
  */
 public class CleanBufferTableTask implements ItemTaskIF {
 	
-	private String sourceFileId = null;
+	private String datasetShortname = null;
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
@@ -28,22 +28,22 @@ public class CleanBufferTableTask implements ItemTaskIF {
 	 * @param sharedParameters get BatchConstant.DWCA_IDENTIFIER_TAG
 	 */
 	@Override
-	public void execute(Map<String,Object> sharedParameters){
-		 sourceFileId = (String)sharedParameters.get(BatchConstant.DWCA_IDENTIFIER_TAG);
+	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
+		datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
 		
 		Session session = sessionFactory.getCurrentSession();
 		
-		if(sourceFileId == null){
-			LOGGER.fatal("Misconfigured task : needs  sourceFileId");
+		if(datasetShortname == null){
+			LOGGER.fatal("Misconfigured task : needs  datasetShortname");
 			throw new TaskExecutionException("Misconfigured task");
 		}
 		session.beginTransaction();
 		SQLQuery query = session.createSQLQuery("DELETE FROM buffer.occurrence_raw WHERE sourcefileid=?");
-		query.setString(0, sourceFileId);
+		query.setString(0, datasetShortname);
 		query.executeUpdate();
 		
 		query = session.createSQLQuery("DELETE FROM buffer.occurrence WHERE sourcefileid=?");
-		query.setString(0, sourceFileId);
+		query.setString(0, datasetShortname);
 		query.executeUpdate();
 		session.getTransaction().commit();
 	}

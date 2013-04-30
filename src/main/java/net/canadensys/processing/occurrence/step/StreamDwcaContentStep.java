@@ -11,6 +11,7 @@ import net.canadensys.processing.ItemReaderIF;
 import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingMessageIF;
 import net.canadensys.processing.ProcessingStepIF;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.message.ProcessOccurrenceMessage;
 import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
 
@@ -31,10 +32,19 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 	private int numberOfRecords = 0;
 	
 	@Override
-	public void preStep() throws IllegalStateException {
+	public void preStep(Map<SharedParameterEnum,Object> sharedParameters) throws IllegalStateException {
+		if(writer == null){
+			throw new IllegalStateException("No writer defined");
+		}
+		if(lineProcessor == null){
+			throw new IllegalStateException("No processor defined");
+		}
+		if(reader == null){
+			throw new IllegalStateException("No reader defined");
+		}
+		reader.open(sharedParameters);
 		writer.open();
 		lineProcessor.init();
-		
 	}
 
 	@Override
@@ -44,10 +54,7 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 		reader.close();
 	}
 	
-	public void execute(Map<String,Object> sharedParameters){
-		//this should be in pre-step but we need the sharedParameters
-		reader.open(sharedParameters);
-
+	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
 		SaveRawOccurrenceMessage rom = new SaveRawOccurrenceMessage();
 		ProcessOccurrenceMessage com = new ProcessOccurrenceMessage();
 		
@@ -77,10 +84,6 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 			writer.write(rom);
 			writer.write(com);
 		}
-		
-		
-		
-		
 	}
 	
 	public int getNumberOfRecords(){

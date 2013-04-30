@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
+import net.canadensys.processing.exception.TaskExecutionException;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.utils.StringUtils;
 
 import org.hibernate.ScrollableResults;
@@ -48,9 +50,10 @@ public class ComputeUniqueValueTask implements ItemTaskIF {
 	private SessionFactory sessionFactory;
 	
 	@Override
-	public void execute(Map<String,Object> sharedParameters){
+	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
 		
 		Session session = sessionFactory.getCurrentSession();
+		session.beginTransaction();
 		session.createSQLQuery("DELETE FROM unique_values").executeUpdate();
 		session.createSQLQuery("ALTER SEQUENCE unique_values_id_seq RESTART WITH 1").executeUpdate();
 		Object[] currentValue;
@@ -70,7 +73,7 @@ public class ComputeUniqueValueTask implements ItemTaskIF {
 					.setParameter("unaccented_value", StringUtils.unaccent(((String)currentValue[1]).toLowerCase())).executeUpdate();
 			}
 		}
-		session.flush();
+		session.getTransaction().commit();
 	}
 
 	public void setSessionFactory(SessionFactory sessionFactory) {

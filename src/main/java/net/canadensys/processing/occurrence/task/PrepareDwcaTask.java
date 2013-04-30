@@ -11,7 +11,7 @@ import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.utils.ZipUtils;
 
 import org.apache.commons.compress.utils.IOUtils;
@@ -36,10 +36,10 @@ public class PrepareDwcaTask implements ItemTaskIF{
 	private String dwcaFilePath = null;
 	
 	/**
-	 * @param sharedParameters added : BatchConstant.DWCA_PATH_TAG, BatchConstant.DWCA_IDENTIFIER_TAG
+	 * @param sharedParameters out:SharedParameterEnum.DWCA_PATH
 	 */
 	@Override
-	public void execute(Map<String,Object> sharedParameters){
+	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
 		boolean dwcaFileExists = false;
 		File dwcaFile = null;
 		String dwcaIdentifier;
@@ -104,8 +104,7 @@ public class PrepareDwcaTask implements ItemTaskIF{
 		}
 		
 		// set shared variables
-		sharedParameters.put(BatchConstant.DWCA_PATH_TAG, dwcaFilePath);
-		sharedParameters.put(BatchConstant.DWCA_IDENTIFIER_TAG, dwcaIdentifier);	
+		sharedParameters.put(SharedParameterEnum.DWCA_PATH, dwcaFilePath);
 	}
 		
 	private boolean downloadDwca(URL url, String destinationFile){

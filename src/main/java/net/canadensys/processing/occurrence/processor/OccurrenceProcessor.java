@@ -8,6 +8,7 @@ import java.util.Map;
 import net.canadensys.dataportal.occurrence.model.OccurrenceModel;
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemProcessorIF;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processor.AbstractDataProcessor;
 import net.canadensys.processor.ProcessingResult;
 import net.canadensys.processor.datetime.DateProcessor;
@@ -63,7 +64,7 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 	public void init() {};
 		
 	@Override
-	public OccurrenceModel process(OccurrenceRawModel rawModel, Map<String,Object> sharedParameters) {
+	public OccurrenceModel process(OccurrenceRawModel rawModel, Map<SharedParameterEnum,Object> sharedParameters) {
 		
 		//cleaning report?
 		OccurrenceModel cleanedModel = new OccurrenceModel();

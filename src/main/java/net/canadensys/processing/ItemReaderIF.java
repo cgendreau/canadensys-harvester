@@ -2,6 +2,9 @@ package net.canadensys.processing;
 
 import java.util.Map;
 
+import net.canadensys.processing.occurrence.SharedParameterEnum;
+
+
 /**
  * Item reading interface
  * @author canadensys
@@ -10,7 +13,7 @@ import java.util.Map;
  */
 public interface ItemReaderIF<T> {
 	
-	public void open(Map<String,Object> sharedParameters);
+	public void open(Map<SharedParameterEnum,Object> sharedParameters);
 	public void close();
 	
 	public T read();

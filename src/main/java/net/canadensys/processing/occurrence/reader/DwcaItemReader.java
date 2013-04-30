@@ -10,7 +10,7 @@ import java.util.Map;
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemMapperIF;
 import net.canadensys.processing.ItemReaderIF;
-import net.canadensys.processing.occurrence.BatchConstant;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.mapper.OccurrenceMapper;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -62,10 +62,11 @@ public class DwcaItemReader implements ItemReaderIF<OccurrenceRawModel>{
 	}
 
 	@Override
-	public void open(Map<String,Object> sharedParameters){
+	public void open(Map<SharedParameterEnum,Object> sharedParameters){
+		dwcaFilePath = (String)sharedParameters.get(SharedParameterEnum.DWCA_PATH);
+		
 		File dwcaFile = null;
 		try {
-			dwcaFilePath = (String)sharedParameters.get(BatchConstant.DWCA_PATH_TAG);
 			dwcaFile = new File(dwcaFilePath);
 			Archive dwcArchive = ArchiveFactory.openArchive(dwcaFile);
 			ArchiveFile dwcaCore = dwcArchive.getCore();
