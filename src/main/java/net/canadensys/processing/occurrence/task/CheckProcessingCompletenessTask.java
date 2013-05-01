@@ -2,6 +2,7 @@ package net.canadensys.processing.occurrence.task;
 
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
@@ -11,6 +12,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import com.google.common.util.concurrent.FutureCallback;
 
@@ -20,12 +24,21 @@ import com.google.common.util.concurrent.FutureCallback;
  * @author canadensys
  *
  */
+@Component
 public class CheckProcessingCompletenessTask implements ItemTaskIF{
 
+	private static final int MAX_WAITING_SECONDS = 10;
 	private static final Logger LOGGER = Logger.getLogger(CheckProcessingCompletenessTask.class);
 	
+	@Autowired
+	@Qualifier(value="bufferSessionFactory")
 	private SessionFactory sessionFactory;
-	private FutureCallback<Void> callback;
+	
+	@Autowired
+	@Qualifier("JobInitiator")
+	private FutureCallback<Void> jobCallback;
+	
+	private int secondsWaiting = 0;
 	
 	/**
 	 * @param sharedParameters get BatchConstant.NUMBER_OF_RECORDS and BatchConstant.DWCA_IDENTIFIER_TAG
@@ -34,12 +47,13 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	public void execute(Map<SharedParameterEnum, Object> sharedParameters) {
 		final Integer numberOfRecords = (Integer)sharedParameters.get(SharedParameterEnum.NUMBER_OF_RECORDS);
 		final String datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
-		if(numberOfRecords == null || datasetShortname == null || callback == null){
+		if(numberOfRecords == null || datasetShortname == null || jobCallback == null){
 			LOGGER.fatal("Misconfigured task : needs numberOfRecords, datasetShortname and callback");
 			throw new TaskExecutionException("Misconfigured task");
 		}
 		
 		Thread checkThread = new Thread(new Runnable() {
+			private int previousCount = 0;
 			@Override
 			public void run() {
 				Session session = sessionFactory.openSession();
@@ -49,6 +63,19 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 				BigInteger currNumberOfResult = (BigInteger)query.uniqueResult();
 				while(currNumberOfResult.intValue() < numberOfRecords){
 					currNumberOfResult = (BigInteger)query.uniqueResult();
+					
+					//make sure we don't get stuck here is something goes wrong with the clients
+					if(previousCount == currNumberOfResult.intValue()){
+						secondsWaiting++;
+						if(secondsWaiting == MAX_WAITING_SECONDS){
+							break;
+						}
+					}
+					else{
+						secondsWaiting = 0;
+					}
+					previousCount = currNumberOfResult.intValue();
+					
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -57,7 +84,13 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 					}
 				}
 				session.close();
-				callback.onSuccess(null);
+				
+				if(secondsWaiting < MAX_WAITING_SECONDS){
+					jobCallback.onSuccess(null);
+				}
+				else{
+					jobCallback.onFailure(new TimeoutException());
+				}
 			}
 		});
 		checkThread.start();
@@ -68,7 +101,7 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	}
 
 	public FutureCallback<Void> getCallback() {
-		return callback;
+		return jobCallback;
 	}
 
 	/**
@@ -76,6 +109,6 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	 * @param callback
 	 */
 	public void setCallback(FutureCallback<Void> callback) {
-		this.callback = callback;
+		this.jobCallback = callback;
 	}
 }

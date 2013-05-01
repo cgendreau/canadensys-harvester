@@ -47,6 +47,12 @@ public class InsertRawOccurrenceStep implements ProcessingStepIF,JMSConsumerMess
 		writer.write(occRawList);
 	}
 	
+	/**
+	 * No implemented, async step
+	 */
+	@Override
+	public void doStep() {};
+	
 	public void setWriter(ItemWriterIF<OccurrenceRawModel> writer){
 		this.writer = writer;
 	}

@@ -12,6 +12,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 /**
  * Processing each line read from a Darwin Core Archive.
@@ -19,9 +22,13 @@ import org.hibernate.StatelessSession;
  * @author canadenys
  *
  */
+@Component("lineProcessor")
 public class DwcaLineProcessor implements ItemProcessorIF<OccurrenceRawModel, OccurrenceRawModel>{
 
+	@Autowired
+	@Qualifier(value="bufferSessionFactory")
 	private SessionFactory sessionFactory;
+	
 	private StatelessSession session;
 	private SQLQuery sqlQuery;
 	

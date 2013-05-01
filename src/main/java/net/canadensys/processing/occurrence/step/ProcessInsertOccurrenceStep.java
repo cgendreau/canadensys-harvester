@@ -43,6 +43,12 @@ public class ProcessInsertOccurrenceStep implements ProcessingStepIF,JMSConsumer
 		writer.close();
 	}
 	
+	/**
+	 * No implemented, async step
+	 */
+	@Override
+	public void doStep() {};
+	
 	@Override
 	public Class<?> getMessageClass() {
 		return ProcessOccurrenceMessage.class;

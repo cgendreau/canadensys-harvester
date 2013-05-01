@@ -26,5 +26,7 @@ public interface ProcessingStepIF {
 	 * Clean up phase.
 	 */
 	public void postStep();
+	
+	public void doStep();
 
 }

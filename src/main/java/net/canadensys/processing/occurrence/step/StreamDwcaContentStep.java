@@ -15,21 +15,35 @@ import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.message.ProcessOccurrenceMessage;
 import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
 /**
  * Step reading a DarwinCore archive line, process the line, writing the processed lines at a fixed interval as ProcessingMessageIF.
  * NOT thread safe
  * @author canadensys
  *
  */
+@Component
 public class StreamDwcaContentStep implements ProcessingStepIF{
 	
 	private static final int FLUSH_INTERVAL = 10;
 	
+	@Autowired
+	@Qualifier("dwcaItemReader")
 	private ItemReaderIF<OccurrenceRawModel> reader;
+	
+	@Autowired
+	@Qualifier("jmsWriter")
 	private ItemWriterIF<ProcessingMessageIF> writer;
+	
+	@Autowired
+	@Qualifier("lineProcessor")
 	private ItemProcessorIF<OccurrenceRawModel, OccurrenceRawModel> lineProcessor;
 	
 	private int numberOfRecords = 0;
+	private Map<SharedParameterEnum,Object> sharedParameters;
 	
 	@Override
 	public void preStep(Map<SharedParameterEnum,Object> sharedParameters) throws IllegalStateException {
@@ -42,6 +56,7 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 		if(reader == null){
 			throw new IllegalStateException("No reader defined");
 		}
+		this.sharedParameters = sharedParameters;
 		reader.open(sharedParameters);
 		writer.open();
 		lineProcessor.init();
@@ -53,8 +68,9 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 		lineProcessor.destroy();
 		reader.close();
 	}
-	
-	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
+
+	@Override
+	public void doStep() {
 		SaveRawOccurrenceMessage rom = new SaveRawOccurrenceMessage();
 		ProcessOccurrenceMessage com = new ProcessOccurrenceMessage();
 		
@@ -84,6 +100,8 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 			writer.write(rom);
 			writer.write(com);
 		}
+		
+		sharedParameters.put(SharedParameterEnum.NUMBER_OF_RECORDS,numberOfRecords);
 	}
 	
 	public int getNumberOfRecords(){
