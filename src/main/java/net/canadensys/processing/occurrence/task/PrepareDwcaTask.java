@@ -19,7 +19,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Component;
 
 /**
  * Task to prepare a Darwin Core Archive.
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Component;
  * @author canadensys
  *
  */
-@Component
 public class PrepareDwcaTask implements ItemTaskIF{
 	//get log4j handler
 	private static final Logger LOGGER = Logger.getLogger(PrepareDwcaTask.class);

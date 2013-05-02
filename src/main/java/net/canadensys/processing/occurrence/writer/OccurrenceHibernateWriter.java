@@ -9,6 +9,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Item writer for OccurrenceModel using Hibernate
@@ -17,7 +19,10 @@ import org.hibernate.Transaction;
  */
 public class OccurrenceHibernateWriter implements ItemWriterIF<OccurrenceModel> {
 	
+	@Autowired
+	@Qualifier(value="bufferSessionFactory")
 	private SessionFactory sessionFactory;
+	
 	private StatelessSession session;
 	
 	@Override

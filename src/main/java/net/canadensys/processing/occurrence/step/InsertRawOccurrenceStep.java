@@ -5,6 +5,9 @@ import java.util.Map;
 
 import javax.jms.IllegalStateException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingMessageIF;
@@ -21,6 +24,8 @@ import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
  */
 public class InsertRawOccurrenceStep implements ProcessingStepIF,JMSConsumerMessageHandler{
 	
+	@Autowired
+	@Qualifier("rawOccurrenceWriter")
 	private ItemWriterIF<OccurrenceRawModel> writer;
 
 	@Override

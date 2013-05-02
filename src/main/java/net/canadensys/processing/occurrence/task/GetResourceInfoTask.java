@@ -12,7 +12,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author canadensys
  *
  */
-@Component
 public class GetResourceInfoTask implements ItemTaskIF{
 	
 	@Autowired
@@ -38,6 +36,9 @@ public class GetResourceInfoTask implements ItemTaskIF{
 		searchCriteria.add(Restrictions.eq("id", resourceId));
 		ResourceModel resourceModel = (ResourceModel)searchCriteria.uniqueResult();
 		
+		if(resourceModel == null){
+			throw new TaskExecutionException("ResourceID " + resourceId + " not found");
+		}
 		sharedParameters.put(SharedParameterEnum.DWCA_URL, resourceModel.getArchive_url());
 		sharedParameters.put(SharedParameterEnum.DATASET_SHORTNAME, resourceModel.getSource_file_id());
 	}
