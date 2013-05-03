@@ -15,7 +15,6 @@ import net.canadensys.processing.occurrence.task.GetResourceInfoTask;
 import net.canadensys.processing.occurrence.task.PrepareDwcaTask;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * This job allows to give a resource ID, stream the content into JMS messages and waiting for completion.
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Component;
  * @author canadensys
  *
  */
-@Component
 public class ImportDwcaJob{
 	
 	protected Map<SharedParameterEnum,Object> sharedParameters = new HashMap<SharedParameterEnum, Object>();

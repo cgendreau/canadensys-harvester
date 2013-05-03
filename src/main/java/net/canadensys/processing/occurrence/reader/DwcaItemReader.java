@@ -20,14 +20,12 @@ import org.gbif.dwc.text.ArchiveField;
 import org.gbif.dwc.text.ArchiveFile;
 import org.gbif.dwc.text.UnsupportedArchiveException;
 import org.gbif.utils.file.ClosableIterator;
-import org.springframework.stereotype.Component;
 
 /**
  * Item reader for Darwin Core Archive
  * @author canadensys
  *
  */
-@Component("dwcaItemReader")
 public class DwcaItemReader implements ItemReaderIF<OccurrenceRawModel>{
 	
 	private static final Map<String,String> RESERVED_WORDS = new HashMap<String, String>();

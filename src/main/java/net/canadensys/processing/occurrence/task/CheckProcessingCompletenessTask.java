@@ -14,7 +14,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import com.google.common.util.concurrent.FutureCallback;
 
@@ -24,7 +23,6 @@ import com.google.common.util.concurrent.FutureCallback;
  * @author canadensys
  *
  */
-@Component
 public class CheckProcessingCompletenessTask implements ItemTaskIF{
 
 	private static final int MAX_WAITING_SECONDS = 10;
@@ -63,7 +61,6 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 				BigInteger currNumberOfResult = (BigInteger)query.uniqueResult();
 				while(currNumberOfResult.intValue() < numberOfRecords){
 					currNumberOfResult = (BigInteger)query.uniqueResult();
-					
 					//make sure we don't get stuck here is something goes wrong with the clients
 					if(previousCount == currNumberOfResult.intValue()){
 						secondsWaiting++;

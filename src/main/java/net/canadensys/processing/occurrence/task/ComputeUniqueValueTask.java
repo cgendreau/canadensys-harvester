@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.canadensys.processing.ItemTaskIF;
-import net.canadensys.processing.exception.TaskExecutionException;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.utils.StringUtils;
 
@@ -13,6 +12,9 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.StandardBasicTypes;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Task to pre-compute all possible unique values and their counts for some fields.
@@ -47,13 +49,15 @@ public class ComputeUniqueValueTask implements ItemTaskIF {
 		columns.add("municipality");
 	}
 	
+	@Autowired
+	@Qualifier(value="publicSessionFactory")
 	private SessionFactory sessionFactory;
 	
+	@Transactional("publicTransactionManager")
 	@Override
 	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
 		
 		Session session = sessionFactory.getCurrentSession();
-		session.beginTransaction();
 		session.createSQLQuery("DELETE FROM unique_values").executeUpdate();
 		session.createSQLQuery("ALTER SEQUENCE unique_values_id_seq RESTART WITH 1").executeUpdate();
 		Object[] currentValue;
@@ -73,7 +77,6 @@ public class ComputeUniqueValueTask implements ItemTaskIF {
 					.setParameter("unaccented_value", StringUtils.unaccent(((String)currentValue[1]).toLowerCase())).executeUpdate();
 			}
 		}
-		session.getTransaction().commit();
 	}
 
 	public void setSessionFactory(SessionFactory sessionFactory) {
