@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemWriterIF;
-import net.canadensys.processing.ProcessingMessageIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.jms.JMSConsumerMessageHandler;
+import net.canadensys.processing.message.ProcessingMessageIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
 

@@ -1,6 +1,6 @@
 package net.canadensys.processing.jms;
 
-import net.canadensys.processing.ProcessingMessageIF;
+import net.canadensys.processing.message.ProcessingMessageIF;
 
 /**
  * Interface to register to JMSConsumer as a message handler

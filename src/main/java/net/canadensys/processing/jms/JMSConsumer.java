@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -13,8 +12,11 @@ import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 
-import net.canadensys.processing.ProcessingMessageIF;
+import net.canadensys.processing.message.ProcessingMessageIF;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.ObjectUtils;
@@ -35,10 +37,15 @@ public class JMSConsumer{
 	public String brokerURL;
 
 	// Name of the queue we will receive messages from
-	private static String queueName = "MyQueue";
+	private static String QUEUE_NAME = "Importer.Queue";
+	private static String CONTROL_TOPIC = "Importer.Topic.Control";
 	
 	private Connection connection;
 	private MessageConsumer consumer;
+	
+	//Topic connection is used to public control commands
+	private TopicConnection topicConnection;
+	private TopicSubscriber subscriber;
 	
 	private List<JMSConsumerMessageHandler> regiteredHandlers;
 	
@@ -62,7 +69,7 @@ public class JMSConsumer{
 		om = new ObjectMapper();
 		BasicConfigurator.configure();
 		// Getting JMS connection from the server
-		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL);
+		ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL);
 		
 		try{
 			connection = connectionFactory.createConnection();
@@ -72,12 +79,21 @@ public class JMSConsumer{
 			Session session = connection.createSession(false,
 					Session.AUTO_ACKNOWLEDGE);
 	
+			JMSMessageListener msgListener = new JMSMessageListener();
+			
 			// Getting the queue
-			Queue queue = session.createQueue(queueName);
+			Queue queue = session.createQueue(QUEUE_NAME);
 	
 			// MessageConsumer is used for receiving (consuming) messages
 			consumer = session.createConsumer(queue);
-			consumer.setMessageListener(new JMSMessageListener());
+			consumer.setMessageListener(msgListener);
+			
+			//Control message
+			topicConnection = connectionFactory.createTopicConnection();
+			topicConnection.start();
+			TopicSession subSession = topicConnection.createTopicSession(false,Session.AUTO_ACKNOWLEDGE);
+			subscriber = subSession.createSubscriber(subSession.createTopic(CONTROL_TOPIC));
+			subscriber.setMessageListener(msgListener);
 		}
 		catch(JMSException jmsEx){
 			jmsEx.printStackTrace();
@@ -87,6 +103,7 @@ public class JMSConsumer{
 	public void close() {
 		try {
 			connection.close();
+			topicConnection.close();
 		} catch (JMSException e) {
 			e.printStackTrace();
 		}
@@ -102,6 +119,7 @@ public class JMSConsumer{
 			// method.
 			if (message instanceof TextMessage) {
 				TextMessage msg = (TextMessage) message;
+				
 				try {
 					Class<?> msgClass = Class.forName(ObjectUtils.defaultIfNull(msg.getStringProperty("MessageClass"), Object.class.getCanonicalName()));
 					//validate if we can instantiate
@@ -111,7 +129,8 @@ public class JMSConsumer{
 							currMsgHandler.handleMessage(chunk);
 							break;
 						}
-
+						
+						//TODO : add support for ControlMessageIF
 						//TODO : raise error if no handler can process it
 					}
 				} catch (JMSException e) {

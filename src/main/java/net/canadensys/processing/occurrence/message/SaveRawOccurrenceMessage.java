@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
-import net.canadensys.processing.ProcessingMessageIF;
+import net.canadensys.processing.message.ProcessingMessageIF;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

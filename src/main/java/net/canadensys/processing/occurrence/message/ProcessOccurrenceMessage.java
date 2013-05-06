@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
-import net.canadensys.processing.ProcessingMessageIF;
+import net.canadensys.processing.message.ProcessingMessageIF;
 
 /**
  * Message asking to process raw occurrence data.
