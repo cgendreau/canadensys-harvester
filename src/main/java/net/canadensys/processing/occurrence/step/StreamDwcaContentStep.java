@@ -17,7 +17,6 @@ import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 /**
  * Step reading a DarwinCore archive line, process the line, writing the processed lines at a fixed interval as ProcessingMessageIF.
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
  * @author canadensys
  *
  */
-@Component
 public class StreamDwcaContentStep implements ProcessingStepIF{
 	
 	private static final int FLUSH_INTERVAL = 10;

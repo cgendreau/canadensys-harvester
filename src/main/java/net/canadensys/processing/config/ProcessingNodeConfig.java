@@ -22,12 +22,6 @@ import net.canadensys.processing.occurrence.processor.OccurrenceProcessor;
 import net.canadensys.processing.occurrence.reader.DwcaItemReader;
 import net.canadensys.processing.occurrence.step.InsertRawOccurrenceStep;
 import net.canadensys.processing.occurrence.step.ProcessInsertOccurrenceStep;
-import net.canadensys.processing.occurrence.step.StreamDwcaContentStep;
-import net.canadensys.processing.occurrence.task.CheckProcessingCompletenessTask;
-import net.canadensys.processing.occurrence.task.CleanBufferTableTask;
-import net.canadensys.processing.occurrence.task.ComputeGISDataTask;
-import net.canadensys.processing.occurrence.task.GetResourceInfoTask;
-import net.canadensys.processing.occurrence.task.PrepareDwcaTask;
 import net.canadensys.processing.occurrence.writer.OccurrenceHibernateWriter;
 import net.canadensys.processing.occurrence.writer.RawOccurrenceHibernateWriter;
 
@@ -53,9 +47,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @ComponentScan(basePackages ="net.canadensys.processing",
 	excludeFilters = { @Filter(type = FilterType.CUSTOM, value = { ExcludeTestClassesTypeFilter.class }),
-	@Filter(type = FilterType.ASSIGNABLE_TYPE, value = { ProcessingNodeConfig.class })})
+		@Filter(type = FilterType.ASSIGNABLE_TYPE, value = { ProcessingConfig.class })})
 @EnableTransactionManagement
-public class ProcessingConfig {
+public class ProcessingNodeConfig {
 	
     @Bean
     public static PropertyPlaceholderConfigurer properties(){
@@ -149,15 +143,14 @@ public class ProcessingConfig {
 	}
 	@Bean
 	public MoveToPublicSchemaJob moveToPublicSchemaJob(){
-		return new MoveToPublicSchemaJob();
+		return null;
 	}
 	
 	//---STEP---
 	@Bean(name="streamDwcaContentStep")
-	public ProcessingStepIF StreamDwcaContentStep(){
-		return new StreamDwcaContentStep();
+	public ProcessingStepIF streamDwcaContentStep(){
+		return null;
 	}
-	
 	@Bean(name="insertRawOccurrenceStep")
 	public ProcessingStepIF insertRawOccurrenceStep(){
 		return new InsertRawOccurrenceStep();
@@ -168,31 +161,26 @@ public class ProcessingConfig {
 		return new ProcessInsertOccurrenceStep();
 	}
 	
-	//---TASK wiring---
-	
+	//---Unused TASK in processing node---
 	@Bean
 	public ItemTaskIF prepareDwcaTask(){
-		return new PrepareDwcaTask();
+		return null;
 	}
-	
 	@Bean
 	public ItemTaskIF cleanBufferTableTask(){
-		return new CleanBufferTableTask();
+		return null;
 	}
-	
 	@Bean
 	public ItemTaskIF computeGISDataTask(){
-		return new ComputeGISDataTask();
+		return null;
 	}
-	
 	@Bean
 	public ItemTaskIF checkProcessingCompletenessTask(){
-		return new CheckProcessingCompletenessTask();
+		return null;
 	}
-	
 	@Bean
 	public ItemTaskIF getResourceInfoTask(){
-		return new GetResourceInfoTask();
+		return null;
 	}
 	
 	//---PROCESSOR wiring---
@@ -225,7 +213,7 @@ public class ProcessingConfig {
 	
 	@Bean
 	public JMSWriter jmsWriter(){
-		return new JMSWriter(jmsBrokerUrl);
+		return null;
 	}
 	
 }
