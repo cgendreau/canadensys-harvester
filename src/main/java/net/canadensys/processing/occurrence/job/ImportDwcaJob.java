@@ -3,8 +3,6 @@ package net.canadensys.processing.occurrence.job;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.IllegalStateException;
-
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;

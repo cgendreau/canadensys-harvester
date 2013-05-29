@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JMSConsumer{
 	
 	public String brokerURL;
+	private boolean isOpen = false;
 
 	// Name of the queue we will receive messages from
 	private static String QUEUE_NAME = "Importer.Queue";
@@ -55,6 +56,17 @@ public class JMSConsumer{
 	public JMSConsumer(String brokerURL){
 		this.brokerURL = brokerURL;
 		regiteredHandlers = new ArrayList<JMSConsumerMessageHandler>();
+	}
+	
+	public void setBrokerURL(String brokerURL){
+		if(isOpen){
+			throw new IllegalStateException("Can not set broker URL if the connection is started.");
+		}
+		this.brokerURL = brokerURL;
+	}
+	
+	public String getBrokerUrl(){
+		return brokerURL;
 	}
 	
 	/**

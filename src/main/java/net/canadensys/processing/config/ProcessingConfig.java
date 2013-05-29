@@ -12,6 +12,7 @@ import net.canadensys.processing.ItemReaderIF;
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingStepIF;
+import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSWriter;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
@@ -84,6 +85,9 @@ public class ProcessingConfig {
     
     @Value("${jms.broker_url}")
     private String jmsBrokerUrl;
+    
+    @Value("${occurrence.idGenerationSQL}")
+    private String idGenerationSQL;
     
     @Bean(name="datasource")
     public DataSource dataSource() {
@@ -198,7 +202,9 @@ public class ProcessingConfig {
 	//---PROCESSOR wiring---
 	@Bean(name="lineProcessor")
 	public ItemProcessorIF<OccurrenceRawModel, OccurrenceRawModel> lineProcessor(){
-		return new DwcaLineProcessor();
+		DwcaLineProcessor dwcaLineProcessor = new DwcaLineProcessor();
+		dwcaLineProcessor.setIdGenerationSQL(idGenerationSQL);
+		return dwcaLineProcessor;
 	}
 	
 	@Bean(name="occurrenceProcessor")
@@ -228,4 +234,8 @@ public class ProcessingConfig {
 		return new JMSWriter(jmsBrokerUrl);
 	}
 	
+	@Bean(name="jmsConsumer")
+	public JMSConsumer jmsConsumer(){
+		return null;
+	}
 }

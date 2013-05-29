@@ -2,8 +2,6 @@ package net.canadensys.processing;
 
 import java.util.Map;
 
-import javax.jms.IllegalStateException;
-
 import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 /**
