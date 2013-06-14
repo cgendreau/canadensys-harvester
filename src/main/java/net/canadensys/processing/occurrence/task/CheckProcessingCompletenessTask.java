@@ -1,9 +1,12 @@
 package net.canadensys.processing.occurrence.task;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import net.canadensys.processing.ItemProgressListenerIF;
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.exception.TaskExecutionException;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
@@ -32,10 +35,7 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	@Qualifier(value="bufferSessionFactory")
 	private SessionFactory sessionFactory;
 	
-	@Autowired
-	@Qualifier("JobInitiator")
-	private FutureCallback<Void> jobCallback;
-	
+	private List<ItemProgressListenerIF> itemListenerList;
 	private int secondsWaiting = 0;
 	
 	/**
@@ -45,6 +45,7 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	public void execute(Map<SharedParameterEnum, Object> sharedParameters) {
 		final Integer numberOfRecords = (Integer)sharedParameters.get(SharedParameterEnum.NUMBER_OF_RECORDS);
 		final String datasetShortname = (String)sharedParameters.get(SharedParameterEnum.DATASET_SHORTNAME);
+		final FutureCallback<Void> jobCallback = (FutureCallback<Void>)sharedParameters.get(SharedParameterEnum.CALLBACK);
 		if(numberOfRecords == null || datasetShortname == null || jobCallback == null){
 			LOGGER.fatal("Misconfigured task : needs numberOfRecords, datasetShortname and callback");
 			throw new TaskExecutionException("Misconfigured task");
@@ -72,6 +73,7 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 						secondsWaiting = 0;
 					}
 					previousCount = currNumberOfResult.intValue();
+					notifyListeners(currNumberOfResult.intValue(),numberOfRecords);
 					
 					try {
 						Thread.sleep(1000);
@@ -97,15 +99,30 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 		this.sessionFactory = sessionFactory;
 	}
 
-	public FutureCallback<Void> getCallback() {
-		return jobCallback;
+//	public FutureCallback<Void> getCallback() {
+//		return jobCallback;
+//	}
+//
+//	/**
+//	 * Set callback method to call when the task identifies that the processing is completed.
+//	 * @param callback
+//	 */
+//	public void setCallback(FutureCallback<Void> callback) {
+//		this.jobCallback = callback;
+//	}
+	
+	private void notifyListeners(int current,int total){
+		if(itemListenerList != null){
+			for(ItemProgressListenerIF currListener : itemListenerList){
+				currListener.onProgress(current, total);
+			}
+		}
 	}
-
-	/**
-	 * Set callback method to call when the task identifies that the processing is completed.
-	 * @param callback
-	 */
-	public void setCallback(FutureCallback<Void> callback) {
-		this.jobCallback = callback;
+	
+	public void addItemProgressListenerIF(ItemProgressListenerIF listener){
+		if(itemListenerList == null){
+			itemListenerList = new ArrayList<ItemProgressListenerIF>();
+		}
+		itemListenerList.add(listener);
 	}
 }

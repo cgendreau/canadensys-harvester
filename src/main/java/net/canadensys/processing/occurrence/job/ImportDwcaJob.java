@@ -3,6 +3,7 @@ package net.canadensys.processing.occurrence.job;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.canadensys.processing.ItemProgressListenerIF;
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
@@ -13,6 +14,8 @@ import net.canadensys.processing.occurrence.task.GetResourceInfoTask;
 import net.canadensys.processing.occurrence.task.PrepareDwcaTask;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.util.concurrent.FutureCallback;
 
 /**
  * This job allows to give a resource ID, stream the content into JMS messages and waiting for completion.
@@ -47,10 +50,14 @@ public class ImportDwcaJob{
 		sharedParameters.put(key, obj);
 	}
 	
+	public Object getSharedParameter(SharedParameterEnum key){
+		return sharedParameters.get(key);
+	}
+	
 	/**
 	 * Run the actual job
 	 */
-	public void doJob(){
+	public void doJob(FutureCallback<Void> jobCallback){
 		//optional task
 		if(getResourceInfoTask != null){
 			getResourceInfoTask.execute(sharedParameters);
@@ -67,7 +74,12 @@ public class ImportDwcaJob{
 		streamDwcaContentStep.doStep();
 		streamDwcaContentStep.postStep();
 		
+		sharedParameters.put(SharedParameterEnum.CALLBACK,jobCallback);
 		checkProcessingCompletenessTask.execute(sharedParameters);
+	}
+	
+	public void setItemProgressListener(ItemProgressListenerIF listener){
+		((CheckProcessingCompletenessTask)checkProcessingCompletenessTask).addItemProgressListenerIF(listener);
 	}
 	
 	public void setGetResourceInfoTask(GetResourceInfoTask getResourceInfoTask){

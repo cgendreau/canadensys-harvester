@@ -4,11 +4,6 @@ import net.canadensys.processing.config.ProcessingNodeConfig;
 import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSConsumerMessageHandler;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -63,22 +58,10 @@ public class ProcessingNodeMain {
 		jmsConsumer.open();
 	}
 	
-	public static void main(String[] args) {
-		Options cmdLineOptions = new Options();
-		cmdLineOptions.addOption("brokerip", true, "IP address of the ActiveMQ broker");
-		CommandLineParser parser = new PosixParser();
-		CommandLine cmdLine = null;
-		try {
-			cmdLine = parser.parse(cmdLineOptions, args);	
-		} catch (ParseException e) {
-			System.out.println(e.getMessage());
-		}
+	public static void main(String newBrokerIp) {
 		String newBrokerUrl = null;
-		if(cmdLine != null){
-			String ipAddress = cmdLine.getOptionValue("brokerip");
-			if(StringUtils.isNotBlank(ipAddress)){
-				newBrokerUrl = String.format(IP, ipAddress);
-			}
+		if(StringUtils.isNotBlank(newBrokerIp)){
+			newBrokerUrl = String.format(IP, newBrokerIp);
 		}
 		
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ProcessingNodeConfig.class);

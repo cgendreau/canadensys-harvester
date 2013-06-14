@@ -3,8 +3,6 @@ package net.canadensys.processing.occurrence.step;
 import java.util.Calendar;
 import java.util.Map;
 
-import javax.jms.IllegalStateException;
-
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemProcessorIF;
 import net.canadensys.processing.ItemReaderIF;
@@ -26,7 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
  */
 public class StreamDwcaContentStep implements ProcessingStepIF{
 	
-	private static final int FLUSH_INTERVAL = 10;
+	private static final int FLUSH_INTERVAL = 100;
 	
 	@Autowired
 	@Qualifier("dwcaItemReader")
@@ -72,6 +70,7 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 		SaveRawOccurrenceMessage rom = new SaveRawOccurrenceMessage();
 		ProcessOccurrenceMessage com = new ProcessOccurrenceMessage();
 		
+		long t= System.currentTimeMillis();
 		OccurrenceRawModel currRawModel = reader.read();
 		while(currRawModel != null){
 			currRawModel = lineProcessor.process(currRawModel, sharedParameters);
@@ -92,6 +91,7 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 				com.setWhen(Calendar.getInstance().getTime().toString());
 			}
 		}
+		System.out.println("Streaming the file took :" + (System.currentTimeMillis()-t) + " ms");
 		
 		//flush remaining content
 		if(rom.getRawModelList().size() > 0){

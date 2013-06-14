@@ -106,9 +106,9 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		//state or province processing
 		if(!StringUtils.isBlank(cleanedModel.getCountry()) && stateProvinceProcessorMap.get(cleanedModel.getCountry()) != null){
 			stateProvinceProcessorMap.get(cleanedModel.getCountry()).processBean(rawModel, cleanedModel, null, null);
-			if(!rawModel.getStateprovince().equalsIgnoreCase(cleanedModel.getStateprovince())){
-				System.out.println(rawModel.getStateprovince() + " ->" + cleanedModel.getStateprovince());
-			}
+//			if(!rawModel.getStateprovince().equalsIgnoreCase(cleanedModel.getStateprovince())){
+//				System.out.println(rawModel.getStateprovince() + " ->" + cleanedModel.getStateprovince());
+//			}
 		}
 		else{//if we can't process it, copy it 
 			cleanedModel.setStateprovince(rawModel.getStateprovince());

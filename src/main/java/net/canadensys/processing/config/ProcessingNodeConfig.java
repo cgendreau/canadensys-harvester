@@ -1,5 +1,6 @@
 package net.canadensys.processing.config;
 
+import java.beans.PropertyVetoException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -12,7 +13,9 @@ import net.canadensys.processing.ItemReaderIF;
 import net.canadensys.processing.ItemTaskIF;
 import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingStepIF;
+import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSWriter;
+import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
 import net.canadensys.processing.occurrence.model.ImportLogModel;
@@ -22,6 +25,7 @@ import net.canadensys.processing.occurrence.processor.OccurrenceProcessor;
 import net.canadensys.processing.occurrence.reader.DwcaItemReader;
 import net.canadensys.processing.occurrence.step.InsertRawOccurrenceStep;
 import net.canadensys.processing.occurrence.step.ProcessInsertOccurrenceStep;
+import net.canadensys.processing.occurrence.view.HarvesterViewModel;
 import net.canadensys.processing.occurrence.writer.OccurrenceHibernateWriter;
 import net.canadensys.processing.occurrence.writer.RawOccurrenceHibernateWriter;
 
@@ -33,10 +37,11 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 /**
  * Configuration class using Spring annotations.
@@ -80,11 +85,15 @@ public class ProcessingNodeConfig {
     private String jmsBrokerUrl;
     
     @Bean(name="datasource")
-    public DataSource dataSource() {
-    	DriverManagerDataSource ds = new DriverManagerDataSource();
-    	ds.setDriverClassName(dbDriverClassName);
-    	ds.setUrl(dbUrl);
-    	ds.setUsername(username);
+    public DataSource dataSource() {    		
+    	ComboPooledDataSource ds = new ComboPooledDataSource();
+    	try {
+			ds.setDriverClass(dbDriverClassName);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+		}
+    	ds.setJdbcUrl(dbUrl);
+    	ds.setUser(username);
     	ds.setPassword(password);
     	return ds;
     }
@@ -101,6 +110,7 @@ public class ProcessingNodeConfig {
 		hibernateProperties.setProperty("hibernate.dialect", hibernateDialect);
 		hibernateProperties.setProperty("hibernate.show_sql", hibernateShowSql);
 		hibernateProperties.setProperty("hibernate.default_schema", hibernateBufferSchema);
+		hibernateProperties.setProperty("hibernate.connection.autocommit","false");
 		hibernateProperties.setProperty("javax.persistence.validation.mode", "none");
     	sb.setHibernateProperties(hibernateProperties);
     	return sb;
@@ -135,6 +145,12 @@ public class ProcessingNodeConfig {
 		htmgr.setSessionFactory(publicSessionFactory().getObject());
     	return htmgr;
     }
+    
+    //---VIEW MODEL---
+	@Bean
+	public HarvesterViewModel harvesterViewModel(){
+		return null;
+	}
 	
     //---JOB---
 	@Bean
@@ -143,6 +159,10 @@ public class ProcessingNodeConfig {
 	}
 	@Bean
 	public MoveToPublicSchemaJob moveToPublicSchemaJob(){
+		return null;
+	}
+	@Bean
+	public ComputeUniqueValueJob computeUniqueValueJob(){
 		return null;
 	}
 	
@@ -214,6 +234,11 @@ public class ProcessingNodeConfig {
 	@Bean
 	public JMSWriter jmsWriter(){
 		return null;
+	}
+	
+	@Bean(name="jmsConsumer")
+	public JMSConsumer jmsConsumer(){
+		return new JMSConsumer(jmsBrokerUrl);
 	}
 	
 }

@@ -3,8 +3,6 @@ package net.canadensys.processing.occurrence.step;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.IllegalStateException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -48,8 +46,10 @@ public class InsertRawOccurrenceStep implements ProcessingStepIF,JMSConsumerMess
 
 	@Override
 	public void handleMessage(ProcessingMessageIF message) {
+		long t = System.currentTimeMillis();
 		List<OccurrenceRawModel> occRawList = ((SaveRawOccurrenceMessage)message).getRawModelList();
 		writer.write(occRawList);
+		System.out.println("Reading msg + Writing raw :" + ( System.currentTimeMillis()-t) + "ms");
 	}
 	
 	/**

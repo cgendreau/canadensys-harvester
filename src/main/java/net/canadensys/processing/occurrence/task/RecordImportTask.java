@@ -11,6 +11,9 @@ import net.canadensys.processing.occurrence.model.ImportLogModel;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Task to record(save) the import for traceability
@@ -19,6 +22,9 @@ import org.hibernate.SessionFactory;
  */
 public class RecordImportTask implements ItemTaskIF{
 	private static final String CURRENT_USER = System.getProperty("user.name");
+
+	@Autowired
+	@Qualifier(value="publicSessionFactory")
 	private SessionFactory sessionFactory;
 	
 	//get log4j handler
@@ -27,6 +33,7 @@ public class RecordImportTask implements ItemTaskIF{
 	/**
 	 * @param sharedParameters in:SharedParameterEnum.DATASET_SHORTNAME,SharedParameterEnum.NUMBER_OF_RECORDS
 	 */
+	@Transactional("publicTransactionManager")
 	@Override
 	public void execute(Map<SharedParameterEnum,Object> sharedParameters){
 		Session session = sessionFactory.getCurrentSession();
@@ -42,9 +49,7 @@ public class RecordImportTask implements ItemTaskIF{
 		importLogModel.setRecord_quantity(numberOfRecords);
 		importLogModel.setUpdated_by(CURRENT_USER);
 		importLogModel.setEvent_end_date_time(new Date());
-		session.beginTransaction();
 		session.save(importLogModel);
-		session.getTransaction().commit();
 	}
 	
 	public void setSessionFactory(SessionFactory sessionFactory) {
