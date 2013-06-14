@@ -128,7 +128,8 @@ public class StepController implements StepControllerIF{
 
 	
 	@Override
-	public void onFailure(Throwable arg0) {
+	public void onFailure(Throwable err) {
+		System.out.println("Import failed " + err.getMessage());
 		harvesterViewModel.setImportStatus(JobStatusEnum.DONE_ERROR);
 	}
 

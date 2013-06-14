@@ -6,6 +6,7 @@ public class ApplicationStatus {
 	
 	private JobStatusEnum importStatus = JobStatusEnum.UNDEFINED;
 	private JobStatusEnum moveStatus = JobStatusEnum.UNDEFINED;
+	private String lastError;
 	
 	
 	public JobStatusEnum getImportStatus() {
@@ -20,6 +21,13 @@ public class ApplicationStatus {
 	}
 	public void setMoveStatus(JobStatusEnum moveStatus) {
 		this.moveStatus = moveStatus;
+	}
+
+	public String getLastError() {
+		return lastError;
+	}
+	public void setLastError(String lastError) {
+		this.lastError = lastError;
 	}
 	
 	public void resetStatus(){

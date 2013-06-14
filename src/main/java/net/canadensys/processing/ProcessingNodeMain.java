@@ -58,6 +58,10 @@ public class ProcessingNodeMain {
 		jmsConsumer.open();
 	}
 	
+	/**
+	 * Processing node entry point
+	 * @param newBrokerIp
+	 */
 	public static void main(String newBrokerIp) {
 		String newBrokerUrl = null;
 		if(StringUtils.isNotBlank(newBrokerIp)){

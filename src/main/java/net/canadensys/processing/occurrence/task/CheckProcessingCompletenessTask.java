@@ -88,7 +88,7 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 					jobCallback.onSuccess(null);
 				}
 				else{
-					jobCallback.onFailure(new TimeoutException());
+					jobCallback.onFailure(new TimeoutException("No progress made in more than " + MAX_WAITING_SECONDS + " seconds."));
 				}
 			}
 		});
@@ -98,18 +98,6 @@ public class CheckProcessingCompletenessTask implements ItemTaskIF{
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-
-//	public FutureCallback<Void> getCallback() {
-//		return jobCallback;
-//	}
-//
-//	/**
-//	 * Set callback method to call when the task identifies that the processing is completed.
-//	 * @param callback
-//	 */
-//	public void setCallback(FutureCallback<Void> callback) {
-//		this.jobCallback = callback;
-//	}
 	
 	private void notifyListeners(int current,int total){
 		if(itemListenerList != null){
