@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 
 import net.canadensys.dataportal.occurrence.model.OccurrenceModel;
 import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
+import net.canadensys.dataportal.occurrence.model.ResourceContactModel;
 import net.canadensys.processing.ExcludeTestClassesTypeFilter;
 import net.canadensys.processing.ItemProcessorIF;
 import net.canadensys.processing.ItemReaderIF;
@@ -22,13 +23,17 @@ import net.canadensys.processing.occurrence.model.ImportLogModel;
 import net.canadensys.processing.occurrence.model.ResourceModel;
 import net.canadensys.processing.occurrence.processor.DwcaLineProcessor;
 import net.canadensys.processing.occurrence.processor.OccurrenceProcessor;
+import net.canadensys.processing.occurrence.processor.ResourceContactProcessor;
 import net.canadensys.processing.occurrence.reader.DwcaItemReader;
 import net.canadensys.processing.occurrence.step.InsertRawOccurrenceStep;
+import net.canadensys.processing.occurrence.step.InsertResourceContactStep;
 import net.canadensys.processing.occurrence.step.ProcessInsertOccurrenceStep;
 import net.canadensys.processing.occurrence.view.HarvesterViewModel;
 import net.canadensys.processing.occurrence.writer.OccurrenceHibernateWriter;
 import net.canadensys.processing.occurrence.writer.RawOccurrenceHibernateWriter;
+import net.canadensys.processing.occurrence.writer.ResourceContactHibernateWriter;
 
+import org.gbif.metadata.eml.Eml;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
@@ -103,8 +108,7 @@ public class ProcessingNodeConfig {
     	LocalSessionFactoryBean sb = new LocalSessionFactoryBean(); 
     	sb.setDataSource(dataSource()); 
     	sb.setAnnotatedClasses(new Class[]{OccurrenceRawModel.class,
-    			OccurrenceModel.class,
-    			ImportLogModel.class});
+    			OccurrenceModel.class,ImportLogModel.class,ResourceContactModel.class});
 
 		Properties hibernateProperties = new Properties();
 		hibernateProperties.setProperty("hibernate.dialect", hibernateDialect);
@@ -167,6 +171,10 @@ public class ProcessingNodeConfig {
 	}
 	
 	//---STEP---
+	@Bean(name="streamEmlContentStep")
+	public ProcessingStepIF streamEmlContentStep(){
+		return null;
+	}
 	@Bean(name="streamDwcaContentStep")
 	public ProcessingStepIF streamDwcaContentStep(){
 		return null;
@@ -179,6 +187,11 @@ public class ProcessingNodeConfig {
 	@Bean(name="processInsertOccurrenceStep")
 	public ProcessingStepIF processInsertOccurrenceStep(){
 		return new ProcessInsertOccurrenceStep();
+	}
+	
+	@Bean(name="insertResourceContactStep")
+	public ProcessingStepIF insertResourceContactStep(){
+		return new InsertResourceContactStep();
 	}
 	
 	//---Unused TASK in processing node---
@@ -214,10 +227,19 @@ public class ProcessingNodeConfig {
 		return new OccurrenceProcessor();
 	}
 	
+	@Bean(name="resourceContactProcessor")
+	public ItemProcessorIF<Eml, ResourceContactModel> resourceContactProcessor(){
+		return new ResourceContactProcessor();
+	}
+	
 	//---READER wiring---
 	@Bean
 	public ItemReaderIF<OccurrenceRawModel> dwcaItemReader(){
 		return new DwcaItemReader();
+	}
+	@Bean
+	public ItemReaderIF<Eml> dwcaEmlReader(){
+		return null;
 	}
 	
 	//---WRITER wiring---
@@ -231,6 +253,15 @@ public class ProcessingNodeConfig {
 		return new OccurrenceHibernateWriter();
 	}
 	
+	@Bean(name="resourceContactWriter")
+	public ItemWriterIF<ResourceContactModel> resourceContactHibernateWriter(){
+		return new ResourceContactHibernateWriter();
+	}
+	
+	/**
+	 * node should not use this
+	 * @return
+	 */
 	@Bean
 	public JMSWriter jmsWriter(){
 		return null;

@@ -50,7 +50,7 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 	private CountryProcessor countryProcessor = new CountryProcessor();
 	private CountryContinentProcessor countryContinentProcessor = new CountryContinentProcessor();
 	private AbstractDataProcessor latLongProcessor = new DecimalLatLongProcessor("decimallatitude","decimallongitude");
-	private AbstractDataProcessor dateProcessor = new DateProcessor("eventdate","syear","smonth","sday");
+	private DateProcessor dateProcessor = new DateProcessor("eventdate","syear","smonth","sday");
 	private AbstractDataProcessor altitudeProcessor = new NumericPairDataProcessor("minimumelevationinmeters","maximumelevationinmeters");
 	private DegreeMinuteToDecimalProcessor dmsProcessor = new DegreeMinuteToDecimalProcessor();
 	
@@ -81,9 +81,6 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		
 		//Country processing
 		countryProcessor.processBean(rawModel, cleanedModel, null, null);
-//			if(!rawModel.getCountry().equalsIgnoreCase(cleanedModel.getCountry())){
-//				System.out.println(rawModel.getCountry() + " ->" + cleanedModel.getCountry());
-//			}
 
 		//Continent processing
 		if(!StringUtils.isBlank(rawModel.getContinent())){
@@ -106,9 +103,6 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		//state or province processing
 		if(!StringUtils.isBlank(cleanedModel.getCountry()) && stateProvinceProcessorMap.get(cleanedModel.getCountry()) != null){
 			stateProvinceProcessorMap.get(cleanedModel.getCountry()).processBean(rawModel, cleanedModel, null, null);
-//			if(!rawModel.getStateprovince().equalsIgnoreCase(cleanedModel.getStateprovince())){
-//				System.out.println(rawModel.getStateprovince() + " ->" + cleanedModel.getStateprovince());
-//			}
 		}
 		else{//if we can't process it, copy it 
 			cleanedModel.setStateprovince(rawModel.getStateprovince());
@@ -138,8 +132,8 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		
 		cleanScientificName(rawModel, cleanedModel);
 		
-		dateProcessor.processBean(rawModel, cleanedModel, null, null);
-		secondPassDateProcess(cleanedModel);
+		//Process date
+		processDate(rawModel, cleanedModel);
 		
 		processCoordinates(rawModel, cleanedModel);
 		
@@ -202,6 +196,26 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		catch(UnparsableException uEx){
 			System.out.println("NameParser " + uEx.getMessage());
 		}
+	}
+	
+	private void processDate(OccurrenceRawModel rawModel, OccurrenceModel occModel){
+		ProcessingResult result = new ProcessingResult();
+		
+		dateProcessor.processBean(rawModel, occModel, null, result);
+		
+		if(occModel.getSday() == null && occModel.getSmonth() == null&& occModel.getSyear() == null){
+			if(result.getErrorList().size() > 0){
+				System.out.println(result.getErrorString());
+			}
+			else{//try verbatim date
+				Integer[] pDate = dateProcessor.process(rawModel.getVerbatimeventdate(), result);
+				occModel.setSyear(pDate[DateProcessor.YEAR_IDX]);
+				occModel.setSmonth(pDate[DateProcessor.MONTH_IDX]);
+				occModel.setSday(pDate[DateProcessor.DAY_IDX]);
+			}
+		}
+		
+		secondPassDateProcess(occModel);
 	}
 	
 	/**
