@@ -41,12 +41,12 @@ public class ProcessInsertOccurrenceStep implements ProcessingStepIF,JMSConsumer
 		if(processor == null){
 			throw new IllegalStateException("No processor defined");
 		}
-		writer.open();
+		writer.openWriter();
 	}
 
 	@Override
 	public void postStep() {
-		writer.close();
+		writer.closeWriter();
 	}
 	
 	/**

@@ -12,8 +12,13 @@ public class JMSWriter extends JMSProducer implements ItemWriterIF<ProcessingMes
 	}
 	
 	@Override
-	public void open() {
+	public void openWriter() {
 		init();
+	}
+	
+	@Override
+	public void closeWriter() {
+		close();
 	}
 
 	@Override

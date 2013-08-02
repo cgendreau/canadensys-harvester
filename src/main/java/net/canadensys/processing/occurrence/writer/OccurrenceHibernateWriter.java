@@ -26,12 +26,12 @@ public class OccurrenceHibernateWriter implements ItemWriterIF<OccurrenceModel> 
 	private StatelessSession session;
 	
 	@Override
-	public void open() {
+	public void openWriter() {
 	    session = sessionFactory.openStatelessSession();
 	}
 
 	@Override
-	public void close() {
+	public void closeWriter() {
 		session.close();
 	}
 

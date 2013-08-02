@@ -62,7 +62,7 @@ public class DwcaItemReader implements ItemReaderIF<OccurrenceRawModel>{
 	}
 
 	@Override
-	public void open(Map<SharedParameterEnum,Object> sharedParameters){
+	public void openReader(Map<SharedParameterEnum,Object> sharedParameters){
 		dwcaFilePath = (String)sharedParameters.get(SharedParameterEnum.DWCA_PATH);
 		
 		File dwcaFile = null;
@@ -104,9 +104,8 @@ public class DwcaItemReader implements ItemReaderIF<OccurrenceRawModel>{
 	}
 	
 	@Override
-	public void close(){
+	public void closeReader(){
 		rowsIt.close();
-		System.out.println("###CLOSE###");
 	}
 	
 	private void validateDwcaHeaders(){

@@ -53,16 +53,16 @@ public class StreamDwcaContentStep implements ProcessingStepIF{
 			throw new IllegalStateException("No reader defined");
 		}
 		this.sharedParameters = sharedParameters;
-		reader.open(sharedParameters);
-		writer.open();
+		reader.openReader(sharedParameters);
+		writer.openWriter();
 		lineProcessor.init();
 	}
 
 	@Override
 	public void postStep() {
-		writer.close();
+		writer.closeWriter();
 		lineProcessor.destroy();
-		reader.close();
+		reader.closeReader();
 	}
 
 	@Override

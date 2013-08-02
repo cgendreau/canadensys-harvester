@@ -9,8 +9,8 @@ import java.util.List;
  * @param <T> type of object to write
  */
 public interface ItemWriterIF<T> {
-	public void open();
-	public void close();
+	public void openWriter();
+	public void closeWriter();
 	
 	public void write(List<? extends T> elementList);
 	public void write(T element);

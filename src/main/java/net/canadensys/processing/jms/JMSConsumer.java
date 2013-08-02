@@ -48,14 +48,14 @@ public class JMSConsumer{
 	private TopicConnection topicConnection;
 	private TopicSubscriber subscriber;
 	
-	private List<JMSConsumerMessageHandler> regiteredHandlers;
+	private List<JMSConsumerMessageHandler> registeredHandlers;
 	
 	//Jackson Mapper to map JSON into Java object
 	private ObjectMapper om;
 	
 	public JMSConsumer(String brokerURL){
 		this.brokerURL = brokerURL;
-		regiteredHandlers = new ArrayList<JMSConsumerMessageHandler>();
+		registeredHandlers = new ArrayList<JMSConsumerMessageHandler>();
 	}
 	
 	public void setBrokerURL(String brokerURL){
@@ -74,7 +74,7 @@ public class JMSConsumer{
 	 * @param handler
 	 */
 	public void registerHandler(JMSConsumerMessageHandler handler){
-		regiteredHandlers.add(handler);
+		registeredHandlers.add(handler);
 	}
 	
 	public void open() {
@@ -135,7 +135,7 @@ public class JMSConsumer{
 				try {
 					Class<?> msgClass = Class.forName(ObjectUtils.defaultIfNull(msg.getStringProperty("MessageClass"), Object.class.getCanonicalName()));
 					//validate if we can instantiate
-					for(JMSConsumerMessageHandler currMsgHandler : regiteredHandlers){
+					for(JMSConsumerMessageHandler currMsgHandler : registeredHandlers){
 						if(currMsgHandler.getMessageClass().equals(msgClass)){
 							ProcessingMessageIF chunk = (ProcessingMessageIF)om.readValue(msg.getText(), msgClass);
 							currMsgHandler.handleMessage(chunk);

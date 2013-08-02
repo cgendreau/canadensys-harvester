@@ -31,12 +31,12 @@ public class InsertRawOccurrenceStep implements ProcessingStepIF,JMSConsumerMess
 		if(writer == null){
 			throw new IllegalStateException("No writer defined");
 		}
-		writer.open();
+		writer.openWriter();
 	}
 
 	@Override
 	public void postStep() {
-		writer.close();
+		writer.closeWriter();
 	}
 	
 	@Override

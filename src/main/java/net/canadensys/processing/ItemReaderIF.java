@@ -13,8 +13,9 @@ import net.canadensys.processing.occurrence.SharedParameterEnum;
  */
 public interface ItemReaderIF<T> {
 	
-	public void open(Map<SharedParameterEnum,Object> sharedParameters);
-	public void close();
+	public void openReader(Map<SharedParameterEnum,Object> sharedParameters);
+	
+	public void closeReader();
 	
 	public T read();
 }
