@@ -51,6 +51,10 @@ public class CleanBufferTableTask implements ItemTaskIF {
 		query = session.createSQLQuery("DELETE FROM buffer.occurrence WHERE sourcefileid=?");
 		query.setString(0, datasetShortname);
 		query.executeUpdate();
+		
+		query = session.createSQLQuery("DELETE FROM buffer.resource_contact WHERE sourcefileid=?");
+		query.setString(0, datasetShortname);
+		query.executeUpdate();
 	}
 
 	public void setSessionFactory(SessionFactory sessionFactory) {

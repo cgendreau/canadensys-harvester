@@ -41,6 +41,9 @@ public class ImportDwcaJob{
 	private ItemTaskIF cleanBufferTableTask;
 	
 	@Autowired
+	private ProcessingStepIF streamEmlContentStep;
+	
+	@Autowired
 	private ProcessingStepIF streamDwcaContentStep;
 	
 	@Autowired
@@ -67,12 +70,17 @@ public class ImportDwcaJob{
 		cleanBufferTableTask.execute(sharedParameters);
 		
 		try {
+			streamEmlContentStep.preStep(sharedParameters);
+			streamEmlContentStep.doStep();
+			streamEmlContentStep.postStep();
+			
 			streamDwcaContentStep.preStep(sharedParameters);
+			streamDwcaContentStep.doStep();
+			streamDwcaContentStep.postStep();
+			
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
-		streamDwcaContentStep.doStep();
-		streamDwcaContentStep.postStep();
 		
 		sharedParameters.put(SharedParameterEnum.CALLBACK,jobCallback);
 		checkProcessingCompletenessTask.execute(sharedParameters);

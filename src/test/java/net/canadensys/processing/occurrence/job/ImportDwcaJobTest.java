@@ -69,8 +69,9 @@ public class ImportDwcaJobTest implements FutureCallback<Void>{
 	@Qualifier("processInsertOccurrenceStep")
 	private JMSConsumerMessageHandler processInsertOccurrenceStep;
 	
-//	@Autowired
-//	private CleanBufferTableTask cleanBufferTableTask;
+	@Autowired
+	@Qualifier("insertResourceContactStep")
+	private JMSConsumerMessageHandler insertResourceContactStep;
 	
     private JdbcTemplate jdbcTemplate;
     
@@ -81,12 +82,7 @@ public class ImportDwcaJobTest implements FutureCallback<Void>{
 	
 	@Test
 	public void testImport(){
-		//.setAllowDatasetShortnameExtraction(true);
-		
-		//CleanBufferTableTask cleanBufferTableTask = new CleanBufferTableTask();
-		//cleanBufferTableTask.setSessionFactory(sessionFactory);
-		
-		
+				
 		//add a local consumer to test the entire loop
 		setupTestConsumer();
 						
@@ -105,6 +101,9 @@ public class ImportDwcaJobTest implements FutureCallback<Void>{
 					
 					String source = jdbcTemplate.queryForObject("SELECT sourcefileid FROM buffer.occurrence where dwcaid='1'", String.class);
 					assertTrue("qmor-specimens".equals(source));
+					
+					String resource_contact = jdbcTemplate.queryForObject("SELECT name FROM buffer.resource_contact where sourcefileid='qmor-specimens'", String.class);
+					assertTrue("Louise Cloutier".equals(resource_contact));
 					
 					int count = jdbcTemplate.queryForObject("SELECT count(*) FROM buffer.occurrence",BigDecimal.class).intValue();
 					assertTrue(new Integer(11).equals(count));
@@ -126,10 +125,12 @@ public class ImportDwcaJobTest implements FutureCallback<Void>{
 		JMSConsumer reader = new JMSConsumer(TEST_BROKER_URL);
 		reader.registerHandler(insertRawOccurrenceStep);
 		reader.registerHandler(processInsertOccurrenceStep);
+		reader.registerHandler(insertResourceContactStep);
 		
 		try {
 			((ProcessingStepIF)insertRawOccurrenceStep).preStep(null);
 			((ProcessingStepIF)processInsertOccurrenceStep).preStep(null);
+			((ProcessingStepIF)insertResourceContactStep).preStep(null);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
