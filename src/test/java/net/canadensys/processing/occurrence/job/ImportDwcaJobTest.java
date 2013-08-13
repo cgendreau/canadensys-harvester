@@ -13,13 +13,8 @@ import net.canadensys.processing.config.ProcessingConfigTest;
 import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSConsumerMessageHandler;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
-import net.canadensys.processing.occurrence.task.RecordImportTask;
-import net.canadensys.processing.occurrence.task.ReplaceOldOccurrenceTask;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,8 +113,7 @@ public class ImportDwcaJobTest implements FutureCallback<Void>{
 	}
 	
 	/**
-	 * This consumer will write to the database specified by the sessionFactory
-	 * @param sessionFactory
+	 * This consumer will write to the database specified by the sessionFactory bean
 	 */
 	private void setupTestConsumer(){
 		JMSConsumer reader = new JMSConsumer(TEST_BROKER_URL);
@@ -134,48 +128,7 @@ public class ImportDwcaJobTest implements FutureCallback<Void>{
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}
-		
 		reader.open();
-	}
-	
-	/**
-	 * This test depends on the testImport test
-	 */
-	//@Test
-	public void testMoveToPublicSchema(){
-		//should use dependency injection
-	    Configuration configuration = new Configuration();
-	    configuration.configure("test-public-hibernate.cfg.xml");
-	    
-	    ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();        
-	    SessionFactory sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-	    
-		MoveToPublicSchemaJob moveToPublicSchemaJob = new MoveToPublicSchemaJob();
-		moveToPublicSchemaJob.addToSharedParameters(SharedParameterEnum.DATASET_SHORTNAME, "qmor-specimens");
-		
-		ReplaceOldOccurrenceTask replaceOld = new ReplaceOldOccurrenceTask();
-		replaceOld.setSessionFactory(sessionFactory);
-		
-		RecordImportTask recordImportTask = new RecordImportTask();
-		recordImportTask.setSessionFactory(sessionFactory);
-		
-		//moveToPublicSchemaJob.setComputeGISDataTask(new MockComputeGISDataTask());
-		moveToPublicSchemaJob.setReplaceOldOccurrenceTask(replaceOld);
-		moveToPublicSchemaJob.setRecordImportTask(recordImportTask);
-		moveToPublicSchemaJob.doJob();
-		
-		String state = jdbcTemplate.queryForObject("SELECT stateprovince FROM occurrence where dwcaid='3'", String.class);
-		assertTrue("Florida".equals(state));
-		
-		String source = jdbcTemplate.queryForObject("SELECT sourcefileid FROM occurrence where dwcaid='1'", String.class);
-		assertTrue("qmor-specimens".equals(source));
-		
-		int count = jdbcTemplate.queryForObject("SELECT count(*) FROM occurrence",BigDecimal.class).intValue();
-		assertTrue(new Integer(11).equals(count));
-		
-		//validate import log
-		Integer record_quantity_log = jdbcTemplate.queryForObject("SELECT record_quantity FROM import_log where sourcefileid = 'qmor-specimens'", Integer.class);
-		assertTrue(new Integer(11).equals(record_quantity_log));
 	}
 	
 	@Override

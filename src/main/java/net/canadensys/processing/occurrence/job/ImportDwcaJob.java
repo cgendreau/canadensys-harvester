@@ -77,7 +77,6 @@ public class ImportDwcaJob{
 			streamDwcaContentStep.preStep(sharedParameters);
 			streamDwcaContentStep.doStep();
 			streamDwcaContentStep.postStep();
-			
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}

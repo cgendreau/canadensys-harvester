@@ -25,11 +25,11 @@ import net.canadensys.vocabulary.stateprovince.CAProvince;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math.util.MathUtils;
 import org.apache.log4j.Logger;
+import org.gbif.api.model.checklistbank.ParsedName;
 import org.gbif.api.model.vocabulary.Country;
-import org.gbif.ecat.model.ParsedName;
-import org.gbif.ecat.parser.NameParser;
-import org.gbif.ecat.parser.UnparsableException;
-import org.gbif.ecat.voc.NameType;
+import org.gbif.api.vocabulary.NameType;
+import org.gbif.nameparser.NameParser;
+import org.gbif.nameparser.UnparsableException;
 
 /**
  * Processing each OccurrenceRawModel into OccurrenceModel.
@@ -181,11 +181,11 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		//set it to raw scientificname in case the parsing could not be done
 		occModel.setScientificname(rawModel.getScientificname());
 		
-		ParsedName<String> parsedName = null;
+		ParsedName parsedName = null;
 		try{
 			parsedName = GBIF_NAME_PARSER.parse(rawModel.getScientificname());
-			if (NameType.wellformed.equals(parsedName.getType())
-					|| NameType.sciname.equals(parsedName.getType())) {
+			if (NameType.WELLFORMED.equals(parsedName.getType())
+					|| NameType.SCINAME.equals(parsedName.getType())) {
 				occModel.setScientificname(parsedName.canonicalNameWithMarker());
 				occModel.setScientificnameauthorship(parsedName.authorshipComplete());
 				
