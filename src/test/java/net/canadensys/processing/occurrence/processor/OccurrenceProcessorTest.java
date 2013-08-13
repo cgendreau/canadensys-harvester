@@ -20,6 +20,7 @@ public class OccurrenceProcessorTest {
 		OccurrenceRawModel rawModel = new OccurrenceRawModel();
 		rawModel.setAssociatedmedia("http://www.google.com | http://yahoo.ca");
 		rawModel.setCountry("bra");
+		rawModel.setScientificname("Carex Linnaeus");
 		
 		rawModel.setDecimallatitude("10.2");
 		rawModel.setDecimallongitude("27.3");
@@ -36,6 +37,10 @@ public class OccurrenceProcessorTest {
 			assertNotNull(processedModel.getDecimallatitude());
 			assertNotNull(processedModel.getDecimallongitude());
 			assertTrue(processedModel.getHascoordinates());
+			
+			//scientific name
+			assertEquals("Carex", processedModel.getScientificname());
+			assertEquals("Linnaeus", processedModel.getScientificnameauthorship());
 			
 			//decade should be set
 			assertEquals(2010, processedModel.getDecade().intValue());
@@ -102,7 +107,7 @@ public class OccurrenceProcessorTest {
 	
 	/**
 	 * Make sure in case decimalLatitude and decimalLongitude is missing that we can use the
-	 * verbatium fields.
+	 * verbatim fields.
 	 */
 	@Test
 	public void testCleaningVerbatimCoordinates(){
