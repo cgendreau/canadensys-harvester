@@ -33,3 +33,9 @@ A reader reads from a data source and give an object back.
 Must implement `ItemWriterIF<T>`
 
 A writer writes an object into a data source.
+
+##Asynchronous component
+To allow the Harvester to run into a distributed environment, the JMS(Java Messaging Service) is used.
+Processing nodes can connect to the broker and receive some processing messages using the `JMSConsumer` class.
+All step allowing distributed processing implements `JMSConsumerMessageHandler` and provides the matching message
+class through the method `getMessageClass()`.
