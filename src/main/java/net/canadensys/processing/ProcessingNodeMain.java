@@ -33,6 +33,9 @@ public class ProcessingNodeMain {
 	@Autowired
 	private ProcessingStepIF insertResourceContactStep;
 	
+	@Autowired
+	private ProcessingStepIF processOccurrenceStatisticsStep;
+	
 	/**
 	 * 
 	 * @param brokerURL a new broker URL or null to use the default one
@@ -49,11 +52,13 @@ public class ProcessingNodeMain {
 		jmsConsumer.registerHandler((JMSConsumerMessageHandler)insertRawOccurrenceStep);
 		jmsConsumer.registerHandler((JMSConsumerMessageHandler)processInsertOccurrenceStep);
 		jmsConsumer.registerHandler((JMSConsumerMessageHandler)insertResourceContactStep);
+		jmsConsumer.registerHandler((JMSConsumerMessageHandler)processOccurrenceStatisticsStep);
 		
 		try {
 			insertRawOccurrenceStep.preStep(null);
 			processInsertOccurrenceStep.preStep(null);
 			insertResourceContactStep.preStep(null);
+			processOccurrenceStatisticsStep.preStep(null);
 		} catch (IllegalStateException e) {
 			e.printStackTrace();
 		}

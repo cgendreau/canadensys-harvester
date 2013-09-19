@@ -1,19 +1,19 @@
 package net.canadensys.processing.occurrence.step;
 
-import java.util.Calendar;
 import java.util.Map;
 
-import net.canadensys.processing.ItemProcessorIF;
+import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.ItemReaderIF;
 import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.message.ProcessingMessageIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
-import net.canadensys.processing.occurrence.message.ProcessOccurrenceMessage;
-import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
+import net.canadensys.processing.occurrence.message.ProcessOccurrenceStatisticsMessage;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * -WIP this will NOT compile-
  * Stream database content for statistics processing as ProcessStatisticsOccurrenceMessage.
  * TODO : this class is sending stats message, who should create the message???
  * @author canadensys
@@ -21,13 +21,18 @@ import net.canadensys.processing.occurrence.message.SaveRawOccurrenceMessage;
  */
 public class StreamOccurrenceForStatsStep implements ProcessingStepIF{
 	
+	private static final int FLUSH_INTERVAL = 100;
+	
 	@Autowired
-	@Qualifier("rawOccurrenceReader")
+	@Qualifier("rawOccurrenceHibernateReader")
 	private ItemReaderIF<OccurrenceRawModel> reader;
 	
 	@Autowired
 	@Qualifier("jmsWriter")
 	private ItemWriterIF<ProcessingMessageIF> writer;
+	
+	private int numberOfRecords = 0;
+	private Map<SharedParameterEnum,Object> sharedParameters;
 	
 	@Override
 	public void preStep(Map<SharedParameterEnum,Object> sharedParameters) throws IllegalStateException {

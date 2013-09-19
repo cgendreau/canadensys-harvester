@@ -3,6 +3,7 @@ package net.canadensys.processing.occurrence.message;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
 import net.canadensys.processing.message.ProcessingMessageIF;
 
 /**

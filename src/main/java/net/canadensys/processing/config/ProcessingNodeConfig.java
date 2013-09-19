@@ -16,18 +16,23 @@ import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSWriter;
+import net.canadensys.processing.occurrence.job.ComputeStatisticsJob;
 import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
+import net.canadensys.processing.occurrence.job.UpdateResourceContactJob;
 import net.canadensys.processing.occurrence.model.ImportLogModel;
+import net.canadensys.processing.occurrence.model.OccurrenceQualityReportElement;
 import net.canadensys.processing.occurrence.model.ResourceModel;
 import net.canadensys.processing.occurrence.processor.DwcaLineProcessor;
 import net.canadensys.processing.occurrence.processor.OccurrenceProcessor;
+import net.canadensys.processing.occurrence.processor.OccurrenceQualityProcessor;
 import net.canadensys.processing.occurrence.processor.ResourceContactProcessor;
 import net.canadensys.processing.occurrence.reader.DwcaItemReader;
 import net.canadensys.processing.occurrence.step.InsertRawOccurrenceStep;
 import net.canadensys.processing.occurrence.step.InsertResourceContactStep;
 import net.canadensys.processing.occurrence.step.ProcessInsertOccurrenceStep;
+import net.canadensys.processing.occurrence.step.ProcessOccurrenceStatisticsStep;
 import net.canadensys.processing.occurrence.view.HarvesterViewModel;
 import net.canadensys.processing.occurrence.writer.OccurrenceHibernateWriter;
 import net.canadensys.processing.occurrence.writer.RawOccurrenceHibernateWriter;
@@ -169,6 +174,14 @@ public class ProcessingNodeConfig {
 	public ComputeUniqueValueJob computeUniqueValueJob(){
 		return null;
 	}
+	@Bean
+	public UpdateResourceContactJob updateResourceContactJob(){
+		return null;
+	}
+	@Bean
+	public ComputeStatisticsJob computeStatisticsJob(){
+		return null;
+	}
 	
 	//---STEP---
 	@Bean(name="streamEmlContentStep")
@@ -192,6 +205,21 @@ public class ProcessingNodeConfig {
 	@Bean(name="insertResourceContactStep")
 	public ProcessingStepIF insertResourceContactStep(){
 		return new InsertResourceContactStep();
+	}
+	
+	@Bean(name="updateResourceContactStep")
+	public ProcessingStepIF updateResourceContactStep(){
+		return null;
+	}
+	
+	@Bean(name="processOccurrenceStatisticsStep")
+	public ProcessingStepIF processOccurrenceStatisticsStep(){
+		return new ProcessOccurrenceStatisticsStep();
+	}
+	
+	@Bean(name="streamOccurrenceForStatsStep")
+	public ProcessingStepIF streamOccurrenceForStatsStep(){
+		return null;
 	}
 	
 	//---Unused TASK in processing node---
@@ -230,6 +258,11 @@ public class ProcessingNodeConfig {
 	@Bean(name="resourceContactProcessor")
 	public ItemProcessorIF<Eml, ResourceContactModel> resourceContactProcessor(){
 		return new ResourceContactProcessor();
+	}
+	
+	@Bean(name="occurrenceQualityProcessor")
+	public ItemProcessorIF<OccurrenceRawModel,OccurrenceQualityReportElement> occurrenceQualityProcessor(){
+		return new OccurrenceQualityProcessor();
 	}
 	
 	//---READER wiring---

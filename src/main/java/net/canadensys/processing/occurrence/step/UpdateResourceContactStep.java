@@ -1,6 +1,5 @@
 package net.canadensys.processing.occurrence.step;
 
-import java.util.Calendar;
 import java.util.Map;
 
 import net.canadensys.dataportal.occurrence.model.ResourceContactModel;
@@ -8,33 +7,31 @@ import net.canadensys.processing.ItemProcessorIF;
 import net.canadensys.processing.ItemReaderIF;
 import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingStepIF;
-import net.canadensys.processing.message.ProcessingMessageIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
-import net.canadensys.processing.occurrence.message.SaveResourceContactMessage;
 
 import org.gbif.metadata.eml.Eml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
- * Step reading an EML file from a DarwinCore archive line, process the it, writing the result as a ProcessingMessageIF.
- * NOT thread safe
+ * This step should not be used in the regular processing loop. It should only be used when we want to update the resource contact without
+ * changing the occurrence records.
  * @author canadensys
  *
  */
-public class StreamEmlContentStep implements ProcessingStepIF{
-
+public class UpdateResourceContactStep implements ProcessingStepIF{
+	
 	@Autowired
 	@Qualifier("dwcaEmlReader")
 	private ItemReaderIF<Eml> reader;
 	
 	@Autowired
-	@Qualifier("jmsWriter")
-	private ItemWriterIF<ProcessingMessageIF> writer;
-	
-	@Autowired
 	@Qualifier("resourceContactProcessor")
 	private ItemProcessorIF<Eml, ResourceContactModel> resourceContactProcessor;
+	
+	@Autowired
+	@Qualifier("resourceContactWriter")
+	private ItemWriterIF<ResourceContactModel> writer;
 	
 	private Map<SharedParameterEnum,Object> sharedParameters;
 	
@@ -64,15 +61,8 @@ public class StreamEmlContentStep implements ProcessingStepIF{
 
 	@Override
 	public void doStep() {
-		//For now, we only read and stream the resource contact
-		SaveResourceContactMessage srcm = new SaveResourceContactMessage();
-		srcm.setWhen(Calendar.getInstance().getTime().toString());
-		
 		Eml emlModel = reader.read();
 		ResourceContactModel resourceContactModel = resourceContactProcessor.process(emlModel, sharedParameters);
-		
-		srcm.setResourceContactModel(resourceContactModel);
-
-		writer.write(srcm);
+		writer.write(resourceContactModel);
 	}
 }

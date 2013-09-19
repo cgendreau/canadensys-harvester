@@ -1,26 +1,19 @@
 package net.canadensys.processing.occurrence.reader;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import net.canadensys.dataportal.occurrence.model.OccurrenceRawModel;
+import net.canadensys.processing.ItemReaderIF;
+import net.canadensys.processing.occurrence.SharedParameterEnum;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
-
-import net.canadensys.databaseutils.ScrollableResultsIteratorWrapper;
-import net.canadensys.dataportal.occurrence.model.OccurrenceModel;
-import net.canadensys.processing.ItemMapperIF;
-import net.canadensys.processing.ItemReaderIF;
-import net.canadensys.processing.occurrence.SharedParameterEnum;
-import net.canadensys.processing.occurrence.mapper.OccurrenceMapper;
-import net.canadensys.processing.occurrence.writer.Autowired;
-import net.canadensys.processing.occurrence.writer.Qualifier;
-import net.canadensys.processing.occurrence.writer.SessionFactory;
-import net.canadensys.processing.occurrence.writer.StatelessSession;
+import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * -WIP this will NOT compile-
@@ -43,6 +36,8 @@ public class RawOccurrenceHibernateReader implements ItemReaderIF<OccurrenceRawM
 	public void openReader(Map<SharedParameterEnum,Object> sharedParameters){
 	    session = sessionFactory.openStatelessSession();
 	    Criteria searchCriteria = session.createCriteria(OccurrenceRawModel.class);
+	    
+	    searchCriteria.add(Restrictions.eq("sourcefileid", "cmmf-specimens"));
 		
 	    searchCriteria.setFetchSize(DEFAULT_FLUSH_LIMIT);  // experiment with this to optimize performance vs. memory
 	  	sr = searchCriteria.scroll(ScrollMode.FORWARD_ONLY);

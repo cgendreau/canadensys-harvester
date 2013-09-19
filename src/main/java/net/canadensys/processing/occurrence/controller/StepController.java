@@ -8,9 +8,11 @@ import java.util.List;
 
 import net.canadensys.processing.ItemProgressListenerIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
+import net.canadensys.processing.occurrence.job.ComputeStatisticsJob;
 import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
+import net.canadensys.processing.occurrence.job.UpdateResourceContactJob;
 import net.canadensys.processing.occurrence.model.IPTFeedModel;
 import net.canadensys.processing.occurrence.model.ImportLogModel;
 import net.canadensys.processing.occurrence.model.ResourceModel;
@@ -47,6 +49,12 @@ public class StepController implements StepControllerIF{
 	private MoveToPublicSchemaJob moveToPublicSchemaJob;
 	
 	@Autowired
+	private UpdateResourceContactJob updateResourceContactJob;
+	
+	@Autowired
+	private ComputeStatisticsJob computeStatisticsJob;
+	
+	@Autowired
 	private ComputeUniqueValueJob computeUniqueValueJob;
 	
 	@Autowired
@@ -61,17 +69,32 @@ public class StepController implements StepControllerIF{
 	 * @param resourceId
 	 * @param progressListener
 	 */
+	@Override
 	public void importDwcA(Integer resourceId){
 		importDwcaJob.addToSharedParameters(SharedParameterEnum.RESOURCE_ID, resourceId);
 		importDwcaJob.doJob(this);
 	}
 	
+	@Override
 	public void moveToPublicSchema(String datasetShortName){
-		//moveToPublicSchemaJob.addToSharedParameters(SharedParameterEnum.NUMBER_OF_RECORDS, importDwcaJob.getSharedParameter(SharedParameterEnum.NUMBER_OF_RECORDS));
 		moveToPublicSchemaJob.addToSharedParameters(SharedParameterEnum.DATASET_SHORTNAME, datasetShortName);
 		moveToPublicSchemaJob.doJob();
 		
 		computeUniqueValueJob.doJob();
+	}
+	
+	@Override
+	public void updateResourceContact(Integer resourceId) {
+		updateResourceContactJob.clearSharedParameters();
+		updateResourceContactJob.addToSharedParameters(SharedParameterEnum.RESOURCE_ID, resourceId);
+		updateResourceContactJob.doJob();
+	}
+	
+	@Override
+	public void computeStatistics() {
+		//computeStatisticsJob.clearSharedParameters();
+		//updateResourceContactJob.addToSharedParameters(SharedParameterEnum.RESOURCE_ID, resourceId);
+		computeStatisticsJob.doJob();
 	}
 	
 	@SuppressWarnings("unchecked")

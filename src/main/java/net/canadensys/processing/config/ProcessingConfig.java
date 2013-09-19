@@ -15,21 +15,28 @@ import net.canadensys.processing.ItemWriterIF;
 import net.canadensys.processing.ProcessingStepIF;
 import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSWriter;
+import net.canadensys.processing.occurrence.job.ComputeStatisticsJob;
 import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
+import net.canadensys.processing.occurrence.job.UpdateResourceContactJob;
 import net.canadensys.processing.occurrence.model.ImportLogModel;
+import net.canadensys.processing.occurrence.model.OccurrenceQualityReportElement;
 import net.canadensys.processing.occurrence.model.ResourceModel;
 import net.canadensys.processing.occurrence.processor.DwcaLineProcessor;
 import net.canadensys.processing.occurrence.processor.OccurrenceProcessor;
 import net.canadensys.processing.occurrence.processor.ResourceContactProcessor;
 import net.canadensys.processing.occurrence.reader.DwcaEmlReader;
 import net.canadensys.processing.occurrence.reader.DwcaItemReader;
+import net.canadensys.processing.occurrence.reader.RawOccurrenceHibernateReader;
 import net.canadensys.processing.occurrence.step.InsertRawOccurrenceStep;
 import net.canadensys.processing.occurrence.step.InsertResourceContactStep;
 import net.canadensys.processing.occurrence.step.ProcessInsertOccurrenceStep;
+import net.canadensys.processing.occurrence.step.ProcessOccurrenceStatisticsStep;
 import net.canadensys.processing.occurrence.step.StreamDwcaContentStep;
 import net.canadensys.processing.occurrence.step.StreamEmlContentStep;
+import net.canadensys.processing.occurrence.step.StreamOccurrenceForStatsStep;
+import net.canadensys.processing.occurrence.step.UpdateResourceContactStep;
 import net.canadensys.processing.occurrence.task.CheckProcessingCompletenessTask;
 import net.canadensys.processing.occurrence.task.CleanBufferTableTask;
 import net.canadensys.processing.occurrence.task.ComputeGISDataTask;
@@ -48,10 +55,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
@@ -117,8 +124,7 @@ public class ProcessingConfig {
     	LocalSessionFactoryBean sb = new LocalSessionFactoryBean(); 
     	sb.setDataSource(dataSource()); 
     	sb.setAnnotatedClasses(new Class[]{OccurrenceRawModel.class,
-    			OccurrenceModel.class,
-    			ImportLogModel.class});
+    			OccurrenceModel.class,ImportLogModel.class,ResourceContactModel.class});
 
 		Properties hibernateProperties = new Properties();
 		hibernateProperties.setProperty("hibernate.dialect", hibernateDialect);
@@ -135,7 +141,7 @@ public class ProcessingConfig {
     	sb.setDataSource(dataSource()); 
     	sb.setAnnotatedClasses(new Class[]{
     			OccurrenceRawModel.class,OccurrenceModel.class,
-    			ImportLogModel.class, ResourceModel.class});
+    			ImportLogModel.class, ResourceModel.class, });
 
 		Properties hibernateProperties = new Properties();
 		hibernateProperties.setProperty("hibernate.dialect", hibernateDialect);
@@ -180,6 +186,14 @@ public class ProcessingConfig {
 	public ComputeUniqueValueJob computeUniqueValueJob(){
 		return new ComputeUniqueValueJob();
 	}
+	@Bean
+	public UpdateResourceContactJob updateResourceContactJob(){
+		return new UpdateResourceContactJob();
+	}
+	@Bean
+	public ComputeStatisticsJob computeStatisticsJob(){
+		return new ComputeStatisticsJob();
+	}
 	
 	//---STEP---
 	@Bean(name="streamEmlContentStep")
@@ -205,6 +219,21 @@ public class ProcessingConfig {
 	@Bean(name="insertResourceContactStep")
 	public ProcessingStepIF insertResourceContactStep(){
 		return new InsertResourceContactStep();
+	}
+	
+	@Bean(name="updateResourceContactStep")
+	public ProcessingStepIF updateResourceContactStep(){
+		return new UpdateResourceContactStep();
+	}
+	
+	@Bean(name="processOccurrenceStatisticsStep")
+	public ProcessingStepIF processOccurrenceStatisticsStep(){
+		return null;
+	}
+	
+	@Bean(name="streamOccurrenceForStatsStep")
+	public ProcessingStepIF streamOccurrenceForStatsStep(){
+		return new StreamOccurrenceForStatsStep();
 	}
 	
 	//---TASK wiring---
@@ -266,6 +295,11 @@ public class ProcessingConfig {
 	public ItemProcessorIF<Eml, ResourceContactModel> resourceContactProcessor(){
 		return new ResourceContactProcessor();
 	}
+	//should only be used by nodes
+	@Bean(name="occurrenceQualityProcessor")
+	public ItemProcessorIF<OccurrenceRawModel,OccurrenceQualityReportElement> occurrenceQualityProcessor(){
+		return null;
+	}
 	
 	//---READER wiring---
 	@Bean
@@ -276,6 +310,11 @@ public class ProcessingConfig {
 	@Bean
 	public ItemReaderIF<Eml> dwcaEmlReader(){
 		return new DwcaEmlReader();
+	}
+	
+	@Bean
+	public ItemReaderIF<OccurrenceRawModel> rawOccurrenceHibernateReader(){
+		return new RawOccurrenceHibernateReader();
 	}
 	
 	//---WRITER wiring---

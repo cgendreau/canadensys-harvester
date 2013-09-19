@@ -14,6 +14,8 @@ public interface StepControllerIF extends FutureCallback<Void>{
 	public void registerProgressListener(ItemProgressListenerIF progressListener);
 	public void importDwcA(Integer resourceId);
 	public void moveToPublicSchema(String datasetShortName);
+	public void updateResourceContact(Integer resourceId);
+	public void computeStatistics();
 	
 	public List<ResourceModel> getResourceModelList();
 	public List<ImportLogModel> getSortedImportLogModelList();
