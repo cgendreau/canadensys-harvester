@@ -11,6 +11,7 @@ import net.canadensys.processing.ItemProcessorIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processor.AbstractDataProcessor;
 import net.canadensys.processor.ProcessingResult;
+import net.canadensys.processor.datetime.DateIntervalProcessor;
 import net.canadensys.processor.datetime.DateProcessor;
 import net.canadensys.processor.geography.CountryContinentProcessor;
 import net.canadensys.processor.geography.CountryProcessor;
@@ -18,6 +19,7 @@ import net.canadensys.processor.geography.DecimalLatLongProcessor;
 import net.canadensys.processor.geography.DegreeMinuteToDecimalProcessor;
 import net.canadensys.processor.geography.StateProvinceProcessor;
 import net.canadensys.processor.numeric.NumericPairDataProcessor;
+import net.canadensys.utils.ArrayUtils;
 import net.canadensys.vocabulary.Continent;
 import net.canadensys.vocabulary.stateprovince.BEProvince;
 import net.canadensys.vocabulary.stateprovince.CAProvince;
@@ -43,6 +45,7 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 	
 	private static final Integer MIN_DATE = 1700;
 	private static final Integer MAX_DATE = Calendar.getInstance().get(Calendar.YEAR);
+	private static final int DATE_INTERVAL_THRESHOLD = 16; //minimum date length = 8 (2002-1-1)
 	
 	private NameParser GBIF_NAME_PARSER = new NameParser();
 	
@@ -51,6 +54,8 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 	private CountryContinentProcessor countryContinentProcessor = new CountryContinentProcessor();
 	private AbstractDataProcessor latLongProcessor = new DecimalLatLongProcessor("decimallatitude","decimallongitude");
 	private DateProcessor dateProcessor = new DateProcessor("eventdate","syear","smonth","sday");
+	private DateIntervalProcessor dateIntervalProcessor = new DateIntervalProcessor();
+	
 	private AbstractDataProcessor altitudeProcessor = new NumericPairDataProcessor("minimumelevationinmeters","maximumelevationinmeters");
 	private DegreeMinuteToDecimalProcessor dmsProcessor = new DegreeMinuteToDecimalProcessor();
 	
@@ -132,7 +137,7 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		
 		cleanScientificName(rawModel, cleanedModel);
 		
-		//Process date
+		//Process date(s)
 		processDate(rawModel, cleanedModel);
 		
 		processCoordinates(rawModel, cleanedModel);
@@ -198,24 +203,81 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 		}
 	}
 	
+	/**
+	 * Process 'eventdate' or 'verbatimeventdate'
+	 * @param rawModel
+	 * @param occModel
+	 */
 	private void processDate(OccurrenceRawModel rawModel, OccurrenceModel occModel){
-		ProcessingResult result = new ProcessingResult();
+		ProcessingResult pr = new ProcessingResult();
 		
-		dateProcessor.processBean(rawModel, occModel, null, result);
+		dateProcessor.processBean(rawModel, occModel, null, pr);
 		
-		if(occModel.getSday() == null && occModel.getSmonth() == null&& occModel.getSyear() == null){
-			if(result.getErrorList().size() > 0){
-				System.out.println(result.getErrorString());
+		if(occModel.getSday() == null && occModel.getSmonth() == null && occModel.getSyear() == null){
+			
+			String rawEventDate = rawModel.getEventdate();
+			String rawVerbatimEventDate = rawModel.getVerbatimeventdate();
+			
+			String usedDate = StringUtils.isNotBlank(rawEventDate)?rawEventDate:rawVerbatimEventDate;
+			usedDate = StringUtils.defaultString(usedDate, "");
+
+			//check if we should try to parse it as date interval
+			if(usedDate.length() > DATE_INTERVAL_THRESHOLD){
+				//we try the date interval, clear the previous error
+				pr.clear();
+				processDateInterval(usedDate,occModel,pr);
 			}
-			else{//try verbatim date
-				Integer[] pDate = dateProcessor.process(rawModel.getVerbatimeventdate(), result);
-				occModel.setSyear(pDate[DateProcessor.YEAR_IDX]);
-				occModel.setSmonth(pDate[DateProcessor.MONTH_IDX]);
-				occModel.setSday(pDate[DateProcessor.DAY_IDX]);
+			else{
+				//try verbatim date only if eventDate is blank
+				if(StringUtils.isNotBlank(rawVerbatimEventDate) && StringUtils.isBlank(rawEventDate)){
+					//we try the verbatim, clear the previous error
+					pr.clear();
+					Integer[] pDate = dateProcessor.process(rawVerbatimEventDate, pr);
+					occModel.setSyear(pDate[DateProcessor.YEAR_IDX]);
+					occModel.setSmonth(pDate[DateProcessor.MONTH_IDX]);
+					occModel.setSday(pDate[DateProcessor.DAY_IDX]);
+				}
+			}
+			
+			if(pr.getErrorList().size() > 0){
+				System.out.println("DwcA ID:"+occModel.getDwcaid() +"->"+pr.getErrorString());
 			}
 		}
 		
 		secondPassDateProcess(occModel);
+	}
+	
+	/**
+	 * Try to process the providedDateInterval as date interval.
+	 * Only complete start and end dates are supported for now.
+	 * @param providedDateInterval
+	 * @param occModel
+	 * @param pr 
+	 */
+	private void processDateInterval(String providedDateInterval, OccurrenceModel occModel, ProcessingResult pr){
+		String[] parsedInterval = dateIntervalProcessor.process(providedDateInterval, pr);
+		String startDate = parsedInterval[DateIntervalProcessor.START_DATE_IDX];
+		String endDate = parsedInterval[DateIntervalProcessor.END_DATE_IDX];
+		
+		if(StringUtils.isBlank(startDate) || StringUtils.isBlank(endDate)){
+			return;
+		}
+		
+		Integer[] pStartDate = dateProcessor.process(startDate, pr);
+		Integer[] pEndDate = dateProcessor.process(endDate, pr);
+		
+		//for now, we only support full date interval
+		if(ArrayUtils.containsOnlyNotNull(pStartDate[DateProcessor.YEAR_IDX],pStartDate[DateProcessor.MONTH_IDX],pStartDate[DateProcessor.DAY_IDX],
+			pEndDate[DateProcessor.YEAR_IDX],pEndDate[DateProcessor.MONTH_IDX],pEndDate[DateProcessor.DAY_IDX])){
+			
+			occModel.setSyear(pStartDate[DateProcessor.YEAR_IDX]);
+			occModel.setSmonth(pStartDate[DateProcessor.MONTH_IDX]);
+			occModel.setSday(pStartDate[DateProcessor.DAY_IDX]);
+	
+			occModel.setEyear(pEndDate[DateProcessor.YEAR_IDX]);
+			occModel.setEmonth(pEndDate[DateProcessor.MONTH_IDX]);
+			occModel.setEday(pEndDate[DateProcessor.DAY_IDX]);
+		}
 	}
 	
 	/**
@@ -281,11 +343,12 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 	}
 	
 	/**
-	 * 
+	 * Make sure the date is within accepted range and set the decade.
 	 * @param occModel
 	 */
 	private void secondPassDateProcess(OccurrenceModel occModel){		
 		//make sure the year is valid
+		//start date
 		if(occModel.getSyear() !=null && occModel.getSyear() < MIN_DATE){
 			occModel.setSyear(null);
 		}
@@ -293,7 +356,35 @@ public class OccurrenceProcessor implements ItemProcessorIF<OccurrenceRawModel, 
 			occModel.setSyear(null);
 		}
 		
-		//set the decade
+		//end date
+		if(occModel.getEyear() !=null && occModel.getEyear() < MIN_DATE){
+			occModel.setSyear(null);
+		}
+		if(occModel.getEyear() !=null && occModel.getEyear() > MAX_DATE){
+			occModel.setSyear(null);
+		}
+		
+		//if we have a date interval
+		if(ArrayUtils.containsOnlyNotNull(occModel.getEyear(),occModel.getEmonth(),occModel.getEday())){
+			Calendar startCal = Calendar.getInstance();
+			startCal.set(occModel.getSyear(), occModel.getSmonth(), occModel.getSday());
+			
+			Calendar endCal = Calendar.getInstance();
+			endCal.set(occModel.getEyear(), occModel.getEmonth(), occModel.getEday());
+			
+			//if start is not before end, clear both dates
+			if(!startCal.before(endCal)){
+				occModel.setSyear(null);
+				occModel.setSmonth(null);
+				occModel.setSday(null);
+				occModel.setEyear(null);
+				occModel.setEmonth(null);
+				occModel.setEday(null);
+				//should include this in the report
+			}
+		}
+		
+		//set the decade (based on start year)
 		if(occModel.getSyear() != null){
 			occModel.setDecade((occModel.getSyear()/10)*10);
 		}
