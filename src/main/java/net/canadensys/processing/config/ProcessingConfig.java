@@ -17,6 +17,7 @@ import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSWriter;
 import net.canadensys.processing.occurrence.job.ComputeStatisticsJob;
 import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
+import net.canadensys.processing.occurrence.job.FindUsedDwcaTermJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
 import net.canadensys.processing.occurrence.job.UpdateResourceContactJob;
@@ -32,7 +33,6 @@ import net.canadensys.processing.occurrence.reader.RawOccurrenceHibernateReader;
 import net.canadensys.processing.occurrence.step.InsertRawOccurrenceStep;
 import net.canadensys.processing.occurrence.step.InsertResourceContactStep;
 import net.canadensys.processing.occurrence.step.ProcessInsertOccurrenceStep;
-import net.canadensys.processing.occurrence.step.ProcessOccurrenceStatisticsStep;
 import net.canadensys.processing.occurrence.step.StreamDwcaContentStep;
 import net.canadensys.processing.occurrence.step.StreamEmlContentStep;
 import net.canadensys.processing.occurrence.step.StreamOccurrenceForStatsStep;
@@ -41,6 +41,7 @@ import net.canadensys.processing.occurrence.task.CheckProcessingCompletenessTask
 import net.canadensys.processing.occurrence.task.CleanBufferTableTask;
 import net.canadensys.processing.occurrence.task.ComputeGISDataTask;
 import net.canadensys.processing.occurrence.task.ComputeUniqueValueTask;
+import net.canadensys.processing.occurrence.task.FindUsedDwcaTermTask;
 import net.canadensys.processing.occurrence.task.GetResourceInfoTask;
 import net.canadensys.processing.occurrence.task.PrepareDwcaTask;
 import net.canadensys.processing.occurrence.task.RecordImportTask;
@@ -102,6 +103,8 @@ public class ProcessingConfig {
     private String hibernateShowSql;
     @Value( "${hibernate.buffer_schema}" )
     private String hibernateBufferSchema;
+    @Value( "${hibernate.jdbc.fetch_size}" )
+    private String hibernateJDBCFetchSize;
     
     @Value("${jms.broker_url}")
     private String jmsBrokerUrl;
@@ -130,6 +133,7 @@ public class ProcessingConfig {
 		hibernateProperties.setProperty("hibernate.dialect", hibernateDialect);
 		hibernateProperties.setProperty("hibernate.show_sql", hibernateShowSql);
 		hibernateProperties.setProperty("hibernate.default_schema", hibernateBufferSchema);
+		hibernateProperties.setProperty("hibernate.jdbc.fetch_size", hibernateJDBCFetchSize);
 		hibernateProperties.setProperty("javax.persistence.validation.mode", "none");
     	sb.setHibernateProperties(hibernateProperties);
     	return sb;
@@ -146,6 +150,7 @@ public class ProcessingConfig {
 		Properties hibernateProperties = new Properties();
 		hibernateProperties.setProperty("hibernate.dialect", hibernateDialect);
 		hibernateProperties.setProperty("hibernate.show_sql", hibernateShowSql);
+		hibernateProperties.setProperty("hibernate.jdbc.fetch_size", hibernateJDBCFetchSize);
 		hibernateProperties.setProperty("javax.persistence.validation.mode", "none");
     	sb.setHibernateProperties(hibernateProperties);
     	return sb;
@@ -193,6 +198,10 @@ public class ProcessingConfig {
 	@Bean
 	public ComputeStatisticsJob computeStatisticsJob(){
 		return new ComputeStatisticsJob();
+	}
+	@Bean
+	public FindUsedDwcaTermJob findUsedDwcaTermJob(){
+		return new FindUsedDwcaTermJob();
 	}
 	
 	//---STEP---
@@ -277,6 +286,12 @@ public class ProcessingConfig {
 	public ItemTaskIF computeUniqueValueTask(){
 		return new ComputeUniqueValueTask();
 	}
+	
+	@Bean
+	public ItemTaskIF findUsedDwcaTermTask(){
+		return new FindUsedDwcaTermTask();
+	}
+	
 	
 	//---PROCESSOR wiring---
 	@Bean(name="lineProcessor")

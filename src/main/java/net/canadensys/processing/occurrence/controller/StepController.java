@@ -10,13 +10,14 @@ import net.canadensys.processing.ItemProgressListenerIF;
 import net.canadensys.processing.occurrence.SharedParameterEnum;
 import net.canadensys.processing.occurrence.job.ComputeStatisticsJob;
 import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
+import net.canadensys.processing.occurrence.job.FindUsedDwcaTermJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
 import net.canadensys.processing.occurrence.job.UpdateResourceContactJob;
+import net.canadensys.processing.occurrence.model.ApplicationStatus.JobStatusEnum;
 import net.canadensys.processing.occurrence.model.IPTFeedModel;
 import net.canadensys.processing.occurrence.model.ImportLogModel;
 import net.canadensys.processing.occurrence.model.ResourceModel;
-import net.canadensys.processing.occurrence.model.ApplicationStatus.JobStatusEnum;
 import net.canadensys.processing.occurrence.view.HarvesterViewModel;
 
 import org.hibernate.Criteria;
@@ -58,6 +59,9 @@ public class StepController implements StepControllerIF{
 	private ComputeUniqueValueJob computeUniqueValueJob;
 	
 	@Autowired
+	private FindUsedDwcaTermJob findUsedDwcaTermJob;
+	
+	@Autowired
 	private HarvesterViewModel harvesterViewModel;
 	
 	public void registerProgressListener(ItemProgressListenerIF progressListener){
@@ -92,9 +96,12 @@ public class StepController implements StepControllerIF{
 	
 	@Override
 	public void computeStatistics() {
-		//computeStatisticsJob.clearSharedParameters();
-		//updateResourceContactJob.addToSharedParameters(SharedParameterEnum.RESOURCE_ID, resourceId);
 		computeStatisticsJob.doJob();
+	}
+	
+	@Override
+	public void printUsedDwcaTermJob() {
+		findUsedDwcaTermJob.doJob();
 	}
 	
 	@SuppressWarnings("unchecked")

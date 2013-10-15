@@ -16,6 +16,7 @@ public interface StepControllerIF extends FutureCallback<Void>{
 	public void moveToPublicSchema(String datasetShortName);
 	public void updateResourceContact(Integer resourceId);
 	public void computeStatistics();
+	public void printUsedDwcaTermJob();
 	
 	public List<ResourceModel> getResourceModelList();
 	public List<ImportLogModel> getSortedImportLogModelList();

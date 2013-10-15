@@ -18,6 +18,7 @@ import net.canadensys.processing.jms.JMSConsumer;
 import net.canadensys.processing.jms.JMSWriter;
 import net.canadensys.processing.occurrence.job.ComputeStatisticsJob;
 import net.canadensys.processing.occurrence.job.ComputeUniqueValueJob;
+import net.canadensys.processing.occurrence.job.FindUsedDwcaTermJob;
 import net.canadensys.processing.occurrence.job.ImportDwcaJob;
 import net.canadensys.processing.occurrence.job.MoveToPublicSchemaJob;
 import net.canadensys.processing.occurrence.job.UpdateResourceContactJob;
@@ -182,6 +183,10 @@ public class ProcessingNodeConfig {
 	public ComputeStatisticsJob computeStatisticsJob(){
 		return null;
 	}
+	@Bean
+	public FindUsedDwcaTermJob findUsedDwcaTermJob(){
+		return null;
+	}
 	
 	//---STEP---
 	@Bean(name="streamEmlContentStep")
@@ -241,6 +246,10 @@ public class ProcessingNodeConfig {
 	}
 	@Bean
 	public ItemTaskIF getResourceInfoTask(){
+		return null;
+	}
+	@Bean
+	public ItemTaskIF findUsedDwcaTermTask(){
 		return null;
 	}
 	
